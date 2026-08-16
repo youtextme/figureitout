@@ -20,6 +20,8 @@ That is the whole idea. Everything else is install.
 
 The installable skill stays short. The full operating law — every concern, why it exists, and the public GitHub projects it is composed from — is in [`mentalModal.md`](mentalModal.md). `/letscook` means run figureitout. There is no second product name.
 
+To rebuild the objective runner inside Cursor from a blank project, follow [`figureItOutObjective.md`](figureItOutObjective.md).
+
 ## Install in one prompt
 
 1. Open a new chat in Cursor, Devin, or Claude.
