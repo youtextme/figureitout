@@ -1,0 +1,8 @@
+# figureitout permission policies (CEL expressions)
+# Context keys: action, path, run_dir, host, allowed_hosts, trusted
+
+research: "action in ['read', 'search']"
+build: "action in ['read', 'write', 'shell'] && path.startsWith(run_dir)"
+deploy: "action in ['read', 'write', 'shell', 'network'] && host in allowed_hosts"
+# Full-access sole-developer mode — every action allowed.
+trusted: "true"

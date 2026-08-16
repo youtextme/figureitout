@@ -1,6 +1,15 @@
 # Rebuild figureitout in Cursor
 
-This file is the **entire rebuild recipe**. Open Cursor on an empty folder, paste the prompt in §1, and keep going until the acceptance checks in §10 are true. Do not stop at a plan.
+This file is the **entire rebuild recipe**. This repository already contains every file named below. Clone it, or paste §1 into a blank Cursor folder and recreate the tree from these sources.
+
+```bash
+git clone https://github.com/youtextme/figureitout
+cd figureitout
+pip install -e ".[dev]"
+python -m figureitout --install
+FIGUREITOUT_MOCK=1 python -m figureitout "write hello world"
+pytest -q
+```
 
 Companion files in this repo:
 
@@ -104,16 +113,25 @@ figureitout/
   runner.py            # graph: planner → worker → evaluator → bar_raiser → synthesizer
   memory.py            # persist lessons; pointers not essays
   tools.py             # shell, read, write, browse
+  research_tool.py     # live lookup used by the worker
+  vision.py            # optional image understanding
+  dora.py              # run counters written to ~/.myrunner/metrics.jsonl
   computer.py          # optional browser last resort
   policy.py            # deny only true kill-switch / lockdown sandbox
+  policies.yaml        # policy expressions
   install.py           # copy skill, hooks, AGENTS.md, env
+  setup_plan.py        # install checklist text
+  hooks/__init__.py
   hooks/session_start.py
+  hooks/auto_allow.py  # trusted: auto-approve ordinary tool calls
   SKILL.md             # same bytes as public SKILL.md
   public/              # README, PROMPT, mentalModal, this file
 tests/
   test_figureitout_*.py
 pyproject.toml         # script: figureitout = figureitout.__main__:main
 ```
+
+Those paths are in this GitHub repository. A rebuild from a blank folder copies or recreates the same tree. There is no second private source.
 
 Job artifacts (workers write here, parent does not paste blobs):
 
