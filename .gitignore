@@ -1,7 +1,7 @@
-.DS_Store
-Thumbs.db
-*.pyc
-__pycache__/
-.venv/
-*.egg-info/
+# Agent GitHub credentials — DO NOT COMMIT
+# Source: source ~/.config/cursor/github.env  (or /home/ubuntu/.config/cursor/github.env)
+# PAT file: ~/.config/cursor/github_pat  (chmod 600)
 
+.github_pat
+github_pat
+*.pat
