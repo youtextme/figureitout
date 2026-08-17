@@ -26,6 +26,7 @@ PROJECT_RULE = REPO_ROOT / ".cursor" / "rules" / "figureitout.mdc"
 OBJECTIVE_RUNNER_SKILL_SRC = REPO_ROOT / ".cursor" / "skills" / "objective-runner" / "SKILL.md"
 LETSCOOK_SKILL_SRC = REPO_ROOT / ".cursor" / "skills" / "letscook" / "SKILL.md"
 RUNFOREST_SKILL_SRC = REPO_ROOT / ".cursor" / "skills" / "runforest" / "SKILL.md"
+TRUE_THAT_SKILL_SRC = REPO_ROOT / ".cursor" / "skills" / "true-that" / "SKILL.md"
 LETSCOOK_RULE_SRC = REPO_ROOT / ".cursor" / "rules" / "letscook-default-f26.mdc"
 
 
@@ -286,6 +287,42 @@ def install_runforest_skill(
             installed.append(str(dest_dir / "RUN_FOREST.md"))
         _log(log, "runforest", "done", f"Skill: {skill_path}")
     return {"ok": True, "installed": installed, "skill_name": "runforest"}
+
+
+def _true_that_user_skill_dir() -> Path:
+    return Path.home() / ".cursor" / "skills" / "true-that"
+
+
+def install_true_that_skill(
+    *,
+    project_root: Path | None = None,
+    log: LogFn | None = None,
+) -> dict[str, Any]:
+    """Install the deeming skill + the same epistemological core."""
+    root = (project_root or REPO_ROOT).resolve()
+    src = TRUE_THAT_SKILL_SRC
+    if not src.exists():
+        return {"ok": False, "error": f"skill source missing: {src}"}
+    text = src.read_text(encoding="utf-8")
+    forest = PUBLIC_DIR / "RUN_FOREST.md"
+    if not forest.exists():
+        forest = REPO_ROOT / "RUN_FOREST.md"
+    forest_text = forest.read_text(encoding="utf-8") if forest.exists() else ""
+    destinations = [
+        _true_that_user_skill_dir(),
+        root / ".cursor" / "skills" / "true-that",
+    ]
+    installed: list[str] = []
+    for dest_dir in destinations:
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        skill_path = dest_dir / "SKILL.md"
+        skill_path.write_text(text, encoding="utf-8")
+        installed.append(str(skill_path))
+        if forest_text:
+            (dest_dir / "RUN_FOREST.md").write_text(forest_text, encoding="utf-8")
+            installed.append(str(dest_dir / "RUN_FOREST.md"))
+        _log(log, "true-that", "done", f"Skill: {skill_path}")
+    return {"ok": True, "installed": installed, "skill_name": "true-that"}
 
 
 def _skill_source() -> Path:
@@ -596,6 +633,16 @@ def install_full_access(
             notes.append(f"runforest skill: {rf_skill.get('error')}")
     except OSError as exc:
         errors.append(f"runforest skill: {exc}")
+
+    try:
+        tt_skill = install_true_that_skill(project_root=root, log=log)
+        if tt_skill.get("ok"):
+            for p in tt_skill.get("installed") or []:
+                changes.append({"type": "skill", "path": p, "name": "true-that"})
+        else:
+            notes.append(f"true-that skill: {tt_skill.get('error')}")
+    except OSError as exc:
+        errors.append(f"true-that skill: {exc}")
 
     try:
         or_skill = install_objective_runner_skill(project_root=root, log=log)

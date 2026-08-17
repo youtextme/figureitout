@@ -240,19 +240,49 @@ def promote_if_survived(
     return claim
 
 
-def cheap_confirm(existing: Claim, ping_observation: str, ping_pointer: str) -> Claim:
-    """Already-warranted atom: one ping that could still kill it. No literature review."""
+def pointer_contacted(pointer: str) -> bool:
+    """True when the pointer still names something outside the utterance.
+
+    Files must exist on disk. HTTP pointers are allowed only as *names* of a
+    live fetch the caller already did — this function does not retrieve.
+    """
+    p = (pointer or "").strip()
+    if not p:
+        return False
+    if p.startswith(("http://", "https://")):
+        return True
+    return Path(p).exists()
+
+
+def cheap_confirm(
+    existing: Claim,
+    ping_observation: str,
+    ping_pointer: str,
+    store: TruthStore | None = None,
+) -> Claim:
+    """Already-warranted atom: re-contact a *stored* pointer. No literature review.
+
+    A new path is not conservation. If the stored pointer is dead, the atom
+    returns to unverified. Record that reading so lookup does not keep the corpse.
+    """
+    target = store or TruthStore()
+
+    def _unverify() -> Claim:
+        existing.status = WarrantStatus.UNVERIFIED
+        target.record(existing)
+        return existing
+
     if not existing.is_warranted():
-        existing.status = WarrantStatus.UNVERIFIED
-        return existing
+        return _unverify()
     if text_is_not_warrant(ping_observation) or not ping_pointer:
-        existing.status = WarrantStatus.UNVERIFIED
-        return existing
-    existing.observation = ping_observation
+        return _unverify()
     if ping_pointer not in existing.pointers:
-        existing.pointers.append(ping_pointer)
+        return _unverify()
+    if not pointer_contacted(ping_pointer):
+        return _unverify()
+    existing.observation = ping_observation
     existing.status = WarrantStatus.SURVIVED if existing.kind == ClaimKind.FACT else existing.status
-    TruthStore().record(existing)
+    target.record(existing)
     return existing
 
 

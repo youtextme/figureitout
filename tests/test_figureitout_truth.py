@@ -15,6 +15,7 @@ from figureitout.truth import (
     cheap_confirm,
     classify_kind,
     grade_proof,
+    pointer_contacted,
     promote_if_survived,
     split_atoms,
     text_is_not_warrant,
@@ -70,20 +71,70 @@ def test_experiment_with_pointer_survives(tmp_path, monkeypatch):
 
 def test_already_warranted_gets_cheap_ping_not_literature(tmp_path, monkeypatch):
     monkeypatch.setenv("FIGUREITOUT_HOME", str(tmp_path))
+    target = tmp_path / "SKILL.md"
+    target.write_text("# loop\n", encoding="utf-8")
     store = TruthStore(path=tmp_path / "semantic_truth.jsonl")
     first = promote_if_survived(
         atom="SKILL.md names the loop",
         kind=ClaimKind.FACT,
         observation="file read; loop heading present",
-        pointers=["SKILL.md"],
+        pointers=[str(target)],
         source="experiment",
         store=store,
     )
     assert first.is_warranted()
-    # cheap_confirm uses default store at runner_home()
-    ping = cheap_confirm(first, "re-read SKILL.md; loop still present", "SKILL.md")
+    ping = cheap_confirm(
+        first,
+        "re-read SKILL.md; loop still present",
+        str(target),
+        store=store,
+    )
     assert ping.status == WarrantStatus.SURVIVED
     assert "literature" not in ping.observation.lower()
+    assert pointer_contacted(str(target)) is True
+
+
+def test_job_folder_is_not_a_cheap_ping(tmp_path, monkeypatch):
+    monkeypatch.setenv("FIGUREITOUT_HOME", str(tmp_path))
+    target = tmp_path / "alive.txt"
+    target.write_text("x", encoding="utf-8")
+    job = tmp_path / "job"
+    job.mkdir()
+    store = TruthStore(path=tmp_path / "semantic_truth.jsonl")
+    first = promote_if_survived(
+        atom="alive.txt exists",
+        kind=ClaimKind.FACT,
+        observation="file exists",
+        pointers=[str(target)],
+        source="experiment",
+        store=store,
+    )
+    ping = cheap_confirm(first, f"cheap ping at {job}", str(job), store=store)
+    assert ping.is_warranted() is False
+    assert ping.status == WarrantStatus.UNVERIFIED
+    latest = store.lookup("alive.txt exists")
+    assert latest is not None
+    assert str(job) not in latest.pointers
+
+
+def test_dead_pointer_returns_to_unverified(tmp_path, monkeypatch):
+    monkeypatch.setenv("FIGUREITOUT_HOME", str(tmp_path))
+    target = tmp_path / "was_here.txt"
+    target.write_text("x", encoding="utf-8")
+    store = TruthStore(path=tmp_path / "semantic_truth.jsonl")
+    first = promote_if_survived(
+        atom="was_here.txt exists",
+        kind=ClaimKind.FACT,
+        observation="file exists",
+        pointers=[str(target)],
+        source="experiment",
+        store=store,
+    )
+    assert first.is_warranted()
+    target.unlink()
+    ping = cheap_confirm(first, f"re-read {target}", str(target), store=store)
+    assert ping.status == WarrantStatus.UNVERIFIED
+    assert already_proven(ping) is False
 
 
 def test_pink_over_blue_is_preference_not_a_fact():

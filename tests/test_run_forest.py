@@ -55,6 +55,7 @@ def test_run_forest_teaches_deeming_and_prove_wrong():
         "procedural",
         "research paper",
         "change how you look",
+        "stored",
     ):
         assert needle in text, needle
 
@@ -82,3 +83,28 @@ def test_runforest_skill_is_thin_and_points_at_core():
     assert "True That" in skill or "true that" in skill.lower()
     assert "alwaysApply" not in skill
     assert len(skill.splitlines()) < 40
+
+
+def test_true_that_is_the_deeming_skill():
+    skill_dir = REPO / ".cursor" / "skills" / "true-that"
+    skill = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+    forest = (skill_dir / "RUN_FOREST.md").read_text(encoding="utf-8")
+    assert "name: true-that" in skill
+    assert "alwaysApply" not in skill
+    assert "RUN_FOREST.md" in skill
+    assert "deem" in skill.lower()
+    assert "disconfirmation" in skill.lower()
+    assert forest.startswith("# Run Forest")
+    assert len(skill.splitlines()) < 40
+
+
+def test_cli_aliases_runforest_and_true_that():
+    from figureitout.__main__ import build_parser
+
+    parser = build_parser()
+    ns = parser.parse_args(["--runforest", "lock the noun"])
+    assert ns.runforest is True
+    assert ns.objective == "lock the noun"
+    ns = parser.parse_args(["--true-that", "is this warranted"])
+    assert ns.true_that is True
+    assert ns.objective == "is this warranted"

@@ -211,6 +211,36 @@ def test_run_objective_hello_world_still_done_and_has_lab(tmp_path, monkeypatch)
     assert (job / "objective_lock.md").exists()
 
 
+def test_laboratory_conserves_stored_pointer_not_job_folder(tmp_path, monkeypatch):
+    home = tmp_path / "home"
+    jobs = tmp_path / "jobs"
+    home.mkdir()
+    monkeypatch.setenv("FIGUREITOUT_HOME", str(home))
+    monkeypatch.setenv("FIGUREITOUT_JOBS_DIR", str(jobs))
+    monkeypatch.setenv("FIGUREITOUT_MOCK", "1")
+    target = home / "alive.txt"
+    target.write_text("yes\n", encoding="utf-8")
+    from figureitout.truth import ClaimKind, TruthStore, promote_if_survived
+
+    store = TruthStore(path=home / "semantic_truth.jsonl")
+    promote_if_survived(
+        atom="alive.txt exists",
+        kind=ClaimKind.FACT,
+        observation=f"{target} exists size={target.stat().st_size}",
+        pointers=[str(target)],
+        source="experiment",
+        store=store,
+    )
+    lab = run_laboratory("alive.txt exists")
+    text = (Path(lab.job_dir) / "truth.md").read_text(encoding="utf-8")
+    assert "Conserved" in text
+    latest = store.lookup("alive.txt exists")
+    assert latest is not None
+    assert latest.is_warranted()
+    assert str(lab.job_dir) not in latest.pointers
+    assert str(target) in latest.pointers
+
+
 def test_evaluate_laboratory_blocks_done_when_predicates_fail(tmp_path):
     board = PredicateBoard(
         predicates=[

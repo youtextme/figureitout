@@ -27,10 +27,12 @@ from figureitout.objective_fn import (
     PredicateKind,
 )
 from figureitout.truth import (
+    Claim,
     ClaimKind,
     TruthStore,
     already_proven,
     cheap_confirm,
+    promote_if_survived,
     split_atoms,
 )
 
@@ -556,43 +558,76 @@ Boolean forks:
 """
 
 
-def _truth_md(objective: str, job: Path) -> str:
+def _probe_one(claim: Claim, store: TruthStore) -> Claim:
+    """Read the meter on one atom: conserve, record preference, or cheap file probe."""
+    prior = store.lookup(claim.atom)
+    if prior is not None and already_proven(prior) and prior.pointers:
+        ptr = prior.pointers[0]
+        return cheap_confirm(prior, f"re-read {ptr}", ptr, store=store)
+    if claim.kind == ClaimKind.PREFERENCE:
+        return claim
+    if claim.kind != ClaimKind.FACT:
+        return claim
+    root = workspace_root()
+    for token in claim.atom.replace("`", " ").replace("'", " ").split():
+        token = token.strip(".,;:()[]")
+        if len(token) < 3:
+            continue
+        candidate = Path(token) if Path(token).is_absolute() else root / token
+        if candidate.exists() and candidate.is_file():
+            return promote_if_survived(
+                atom=claim.atom,
+                kind=claim.kind,
+                observation=f"{candidate} exists size={candidate.stat().st_size}",
+                pointers=[str(candidate)],
+                source="experiment",
+                store=store,
+            )
+    return claim
+
+
+def _probe_atoms(objective: str) -> list[Claim]:
     store = TruthStore()
-    atoms = split_atoms(objective)
+    return [_probe_one(claim, store) for claim in split_atoms(objective)]
+
+
+def _truth_md(objective: str, job: Path) -> str:
+    atoms = _probe_atoms(objective)
     lines = [
         "# Atoms and warrants",
         "",
         "Context is built from warrants, not from related text.",
         "Prove each fact-atom wrong before promoting it. Prefer cheap pings",
-        "on atoms that already survived.",
+        "on atoms that already survived. A new path is not a ping of an old warrant.",
+        "",
+        f"Working memory for this run: `{job}`.",
         "",
     ]
     for claim in atoms:
-        prior = store.lookup(claim.atom)
-        if prior is not None and already_proven(prior):
-            ping = cheap_confirm(prior, f"cheap ping at {job}", str(job))
-            lines.extend(
-                [
-                    f"## Conserved — {claim.atom}",
-                    "",
-                    f"- Kind: {claim.kind.value}",
-                    f"- Status: {ping.status.value}",
-                    "- Already warranted; no literature review. Cheap ping only.",
-                    "",
-                ]
-            )
-            continue
+        if claim.kind == ClaimKind.PREFERENCE:
+            heading = "Preference"
+        elif claim.is_warranted():
+            heading = "Conserved"
+        else:
+            heading = "Unknown"
         lines.extend(
             [
-                f"## Unknown — {claim.atom}",
+                f"## {heading} — {claim.atom}",
                 "",
                 f"- Kind: {claim.kind.value}",
-                "- Status: unverified",
+                f"- Status: {claim.status.value}",
                 f"- Disconfirmation: {claim.disconfirmation}",
             ]
         )
-        if claim.kind == ClaimKind.PREFERENCE:
+        if heading == "Conserved":
+            lines.append(
+                "- Already warranted; no literature review. Cheap ping re-contacted "
+                f"{claim.pointers[0] if claim.pointers else 'a stored pointer'}."
+            )
+        elif claim.kind == ClaimKind.PREFERENCE:
             lines.append("- Preference: record it. Do not A/B-test taste.")
+        elif claim.status.value == "unverified":
+            lines.append("- Blocked or unprobed: change the probe. Do not conclude there is no truth.")
         lines.append("")
     return "\n".join(lines)
 

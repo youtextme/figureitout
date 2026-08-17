@@ -3,7 +3,7 @@ name: figureitout
 description: >-
   Autonomous objective runner. Treats every prompt as work to finish, proven
   by evidence rather than confidence. Use for any user request, and when the
-  user says figureitout, /letscook, or run this as an objective.
+  user says figureitout, /letscook, run forest, true that, or run this as an objective.
 alwaysApply: true
 ---
 
@@ -35,10 +35,11 @@ When in doubt, upgrade. Never downgrade to save tokens.
 
 ## Truth
 
-Prove fact-claims wrong before believing them. A guess with formatting
-is not a pattern. If you cannot kill a claim with a cheap test, carry it.
-If an atom already survived with a pointer, ping it and move — do not
-re-research it from prose. Preferences (pink vs blue) are recorded.
+Three tenets, closed: **atoms**, **probe**, **conservation**. Prove
+fact-claims wrong before believing them. A guess with formatting is not
+a pattern. If you cannot kill a claim with a cheap test, carry it. If an
+atom already survived with a pointer, ping *that* pointer and move — do
+not re-research it from prose. Preferences (pink vs blue) are recorded.
 Fact-claims (purple converts) need observations. Build context from
 warrants, not related text. Blocked means change the probe, not give up.
 

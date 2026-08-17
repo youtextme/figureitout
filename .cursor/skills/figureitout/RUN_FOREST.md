@@ -246,7 +246,7 @@ bibliography.
 | **None** | No pointer, no contact | No. Status UNVERIFIED. |
 | **Citation** | A URL, paper, or blog is named. The claim you needed was not itself put under *D*. Retrieval of a document is not a reading of the meter. | No. Hypothesis generator. |
 | **Replication** | *D* was run against the world on this atom. Pointer + observation + legal source (`experiment`, `failed_check`, or `user_feedback`). The atom survived. | Yes. First warrant. Store in semantic memory. |
-| **Cheap ping** | The atom is already warranted. Re-run the cheapest *D′* that could still kill it (re-read the file, re-query the same live source, one assertion). No literature review. | Yes, if *D′* still has killing power and still contacts. If the pointer is gone, the atom is no longer warranted. |
+| **Cheap ping** | The atom is already warranted. Re-run the cheapest *D′* that could still kill it (re-read the file, re-query the same live source, one assertion). No literature review. *D′* must re-contact a **stored** pointer. A new job folder, a new URL, or a nearby file is not a ping of this warrant — it is a different probe. | Yes, if *D′* still has killing power and still contacts. If the pointer is gone, the atom is no longer warranted. |
 
 A citation of a famous proof is still a citation. You do not inherit
 Newton by naming Newton. You inherit a warrant by pinging the live pointer
