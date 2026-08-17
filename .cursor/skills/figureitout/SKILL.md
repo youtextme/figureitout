@@ -4,7 +4,7 @@ description: >-
   Autonomous objective runner. Treats every prompt as work to finish, proven
   by evidence rather than confidence. Use for any user request, and when the
   user says figureitout, /letscook, run forest, true that, or run this as an objective.
-alwaysApply: true
+alwaysApply: false
 ---
 
 # figureitout
@@ -105,3 +105,5 @@ python -m figureitout "your objective"
 python -m figureitout --install
 python -m figureitout --resume RUN_ID
 ```
+
+> **Superseded by [run-forrest-run](https://github.com/youtextme/run-forrest-run).** `alwaysApply` disabled.

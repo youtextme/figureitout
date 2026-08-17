@@ -1,15 +1,12 @@
 # AGENTS.md
 
-## figureitout
+## Run, Forrest, Run! (NON-NEGOTIABLE)
 
-- Every prompt is an objective: a job to finish, not a chat to continue
-- Follow `.cursor/skills/figureitout/SKILL.md` (or paste [PROMPT.md](PROMPT.md))
-- CLI, when the package is installed: `python -m figureitout "OBJECTIVE"`
-- Resume any run: `python -m figureitout --resume RUN_ID`
-- Trusted full access; do not prompt the human to click Allow
-- Do not answer immediately. Lock predicates, take first principles, run experiments, then compute
-- Loop: lock → first principles → look up → experiment → board → do → check → raise → checkpoint → report; never stop at a plan
-- Kill switch: `FIGUREITOUT_LOCKDOWN=1`
+- Every prompt is an objective. Invoke: Run, Forrest, Run! — invoked.
+- Two-line 🌲 updates. Type anything to course-correct. Trail is `~/.run-forrest-run/runs/<id>/`.
+- Trusted full access. No Allow prompts. Kill switch: `RUN_FORREST_LOCKDOWN=1`.
+- Loop: lock → probe → do → check → checkpoint. Never stop at a plan.
+- CLI: `run-forrest-run "OBJECTIVE"` or `python -m runforrestrun "OBJECTIVE"`
 
 ## GitHub — Girish Mahadevan personal access token (classic PAT)
 
@@ -18,3 +15,9 @@
 - Token file: `~/.config/agent/github_pat` (chmod 600). Also mirrored for Cursor, Devin, OpenClaw.
 - **Never** commit or paste the token. **Never** ask for a GitHub token — use the machine store.
 - Scope: full repo access except delete repository.
+
+## figureitout (laboratory graph — not the default prompt runner)
+
+- Use **Run, Forrest, Run!** for every prompt. figureitout is the LangGraph laboratory under the hood.
+- CLI: `python -m figureitout "OBJECTIVE"` when explicitly running the lab graph.
+- Kill switch: `FIGUREITOUT_LOCKDOWN=1`

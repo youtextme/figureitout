@@ -1,6 +1,6 @@
 ---
 description: figureitout trusted (always on)
-alwaysApply: true
+alwaysApply: false
 ---
 
 # figureitout trusted (always on)
@@ -15,3 +15,5 @@ Every prompt is an objective. Trusted full access is ON.
 - Install / repair: `python -m figureitout --install`
 - Kill switch: `FIGUREITOUT_LOCKDOWN=1`
 - Loop: lock → look up → do → check → raise → checkpoint → report; never stop at a plan
+
+Use `.cursor/skills/run-forrest-run/SKILL.md` and `.cursor/rules/run-forrest-run.mdc` instead.
