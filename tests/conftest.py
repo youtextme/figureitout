@@ -1,8 +1,7 @@
-"""Public figureitout test defaults — no host-stack imports."""
+"""Run, Forrest, Run! platform test defaults."""
 
 from __future__ import annotations
 
 import os
 
-os.environ.setdefault("FIGUREITOUT_MOCK", "1")
-os.environ.setdefault("LLM_PROVIDER", "mock")
+os.environ.setdefault("RUN_FORREST_SKIP_SYNC", "1")

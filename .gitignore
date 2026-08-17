@@ -1,5 +1,13 @@
-.DS_Store
-Thumbs.db
-*.pyc
 __pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
 .venv/
+dist/
+build/
+canonical/
+# Local host install artifacts (created by ./install.sh in this repo)
+.cursor/
+.claude/
+.devin/
+.agents/
