@@ -77,9 +77,13 @@ chmod +x install.sh && ./install.sh
 ## How a run works
 
 ```
-lock the goal and the checks
+do not answer first
         ↓
-look up what is true (files, docs, tools)
+lock the goal and the predicates (unevaluated = false)
+        ↓
+first principles + live lookup + a real experiment
+        ↓
+board + steer questions (proceed if no steer)
         ↓
 do the work
         ↓
@@ -87,12 +91,15 @@ check evidence ──fail──► fix and check again
         ↓ pass
 raise the bar once if the result is sloppy
         ↓
+checkpoint so any agent can resume
+        ↓
 report what changed + the proof
 ```
 
 The agent does not wait for you to approve ordinary tool use. It stops only if a paid secret is missing from the environment, or if the next step would destroy production with no recovery.
 
 To sandbox a run: set `FIGUREITOUT_LOCKDOWN=1`.
+To continue a stopped run: `python -m figureitout --resume RUN_ID`.
 
 ## Who this is for
 

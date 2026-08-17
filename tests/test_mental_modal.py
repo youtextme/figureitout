@@ -28,6 +28,13 @@ PUBLIC_REPOS = (
     "https://github.com/chartjs/Chart.js",
     "https://github.com/cli/cli",
     "https://github.com/pydantic/pydantic-ai",
+    "https://github.com/stanfordnlp/dspy",
+    "https://github.com/UKGovernmentBEIS/inspect_ai",
+    "https://github.com/openai/openai-agents-python",
+    "https://github.com/modelcontextprotocol/python-sdk",
+    "https://github.com/browser-use/browser-use",
+    "https://github.com/OpenHands/OpenHands",
+    "https://github.com/letta-ai/letta",
 )
 
 THEME_MARKERS = (

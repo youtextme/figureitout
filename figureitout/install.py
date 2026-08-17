@@ -282,6 +282,13 @@ def _write_skill(dest: Path, log: LogFn | None) -> None:
         (dest.parent / "PROMPT.md").write_text(
             prompt_src.read_text(encoding="utf-8"), encoding="utf-8"
         )
+    modal_src = PUBLIC_DIR / "mentalModal.md"
+    if not modal_src.exists():
+        modal_src = REPO_ROOT / "mentalModal.md"
+    if modal_src.exists():
+        (dest.parent / "mentalModal.md").write_text(
+            modal_src.read_text(encoding="utf-8"), encoding="utf-8"
+        )
     _log(log, "figureitout", "done", f"Skill: {dest}")
 
 

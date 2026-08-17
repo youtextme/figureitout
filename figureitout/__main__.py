@@ -43,6 +43,12 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Alias: run the same figureitout loop on the objective",
     )
+    parser.add_argument(
+        "--resume",
+        metavar="RUN_ID",
+        default=None,
+        help="Resume from a checkpoint written under the jobs directory",
+    )
     args = parser.parse_args(argv)
 
     if args.sandbox:
@@ -75,7 +81,7 @@ def main(argv: list[str] | None = None) -> int:
     objective = args.objective or "write hello world"
     from figureitout.runner import run_objective
 
-    result = run_objective(objective, retries=0)
+    result = run_objective(objective, retries=0, resume_run_id=args.resume)
     if args.json:
         printable = {k: v for k, v in result.items() if k != "dora" or isinstance(v, dict)}
         print(json.dumps(printable, indent=2, default=str))
