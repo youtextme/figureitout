@@ -1,6 +1,6 @@
 ---
-description: Run, Forrest, Run! default objective runner (always on)
-alwaysApply: true
+description: Run, Forrest, Run! default objective runner for every prompt
+trigger: always_on
 ---
 
 # Run, Forrest, Run!
@@ -10,4 +10,4 @@ alwaysApply: true
 🌲 Run, Forrest, Run! — invoked.
 🌲 I don't have a warrant on this yet. I'll probe it. Type anything to course-correct — the trail keeps everything.
 
-Every prompt is an objective. All updates are two 🌲 lines. Trusted ON. Kill switch: RUN_FORREST_LOCKDOWN=1.
+Non-negotiable for every session. Canonical: https://github.com/youtextme/run-forrest-run
