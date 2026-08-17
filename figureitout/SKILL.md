@@ -39,7 +39,8 @@ Kill switch: `FIGUREITOUT_LOCKDOWN=1` → sandbox only.
 
 - Do not invent data. Use a live source, omit the number, or say **blocked**.
 - Do not ask for API keys in chat. Read the environment.
-- Prefer command line and APIs. Use a browser only when the job is the UI.
+- Prefer command line and APIs. Use a browser or desktop computer use only when the job is the UI.
+- Keep Cursor, Devin, and OpenClaw copies of this skill identical (`python -m figureitout --sync`).
 - If you cannot finish, say what blocked you and what evidence you have.
 
 ## Install (once)
@@ -48,6 +49,7 @@ Copy this file to:
 
 - Cursor: `.cursor/skills/figureitout/SKILL.md` or `~/.cursor/skills/figureitout/SKILL.md`
 - Devin: `.devin/skills/figureitout/SKILL.md`
+- OpenClaw: `.openclaw/skills/figureitout/SKILL.md` or `~/.openclaw/skills/figureitout/SKILL.md`
 - Claude: `.claude/skills/figureitout/SKILL.md` or project instructions
 - Any agent: paste [PROMPT.md](PROMPT.md) into a new chat
 

@@ -3,3 +3,5 @@ Thumbs.db
 *.pyc
 __pycache__/
 .venv/
+.figureitout/examples/
+*.egg-info/

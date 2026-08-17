@@ -1,0 +1,22 @@
+{
+  "provider": "kilocode",
+  "baseUrl": "https://api.kilo.ai/api/gateway",
+  "defaultModel": "kilo-auto/free",
+  "fallbacks": [
+    "local",
+    "openai",
+    "anthropic"
+  ],
+  "fallbackModels": [
+    "kilo-auto/small",
+    "openrouter/free"
+  ],
+  "apiKeyEnv": [
+    "KILOCODE_API_KEY",
+    "KILO_API_KEY",
+    "KILOCODE_KEY"
+  ],
+  "keyPresent": false,
+  "anonymousFreeOk": true,
+  "notes": "Use kilo-auto/free daily credits first. On 402/429 or missing capability, fall through fallbacks. Never print the API key."
+}

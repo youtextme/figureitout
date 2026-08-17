@@ -1,0 +1,28 @@
+{
+  "models": {
+    "providers": {
+      "kilocode": {
+        "baseUrl": "https://api.kilo.ai/api/gateway",
+        "api": "openai-completions",
+        "apiKey": {
+          "source": "env",
+          "id": "KILOCODE_API_KEY"
+        }
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "kilocode/kilo-auto/free",
+        "fallbacks": [
+          "kilocode/kilo-auto/small",
+          "kilocode/openrouter/free"
+        ]
+      }
+    }
+  },
+  "browser": {
+    "defaultProfile": "openclaw"
+  }
+}

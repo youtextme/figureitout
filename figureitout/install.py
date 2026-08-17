@@ -379,7 +379,10 @@ def _write_env_file(log: LogFn | None) -> Path:
     body = "\n".join(
         [
             "FIGUREITOUT_TRUSTED=1",
-            "LLM_PROVIDER=local",
+            "LLM_PROVIDER=kilocode",
+            "FIGUREITOUT_KILOCODE_BASE_URL=https://api.kilo.ai/api/gateway",
+            "FIGUREITOUT_KILOCODE_MODEL=kilo-auto/free",
+            "FIGUREITOUT_FALLBACK_PROVIDERS=kilocode,local,openai,anthropic",
             "FIGUREITOUT_LOCAL_BASE_URL=http://localhost:11435/v1",
             "FIGUREITOUT_LOCAL_MODEL=tireless-router",
             "LANGCHAIN_TRACING_V2=false",
@@ -501,7 +504,10 @@ def install_full_access(
     # 1) Env — trusted by default
     for key, val in {
         "FIGUREITOUT_TRUSTED": "1",
-        "LLM_PROVIDER": "local",
+        "LLM_PROVIDER": "kilocode",
+        "FIGUREITOUT_KILOCODE_BASE_URL": "https://api.kilo.ai/api/gateway",
+        "FIGUREITOUT_KILOCODE_MODEL": "kilo-auto/free",
+        "FIGUREITOUT_FALLBACK_PROVIDERS": "kilocode,local,openai,anthropic",
         "FIGUREITOUT_LOCAL_BASE_URL": "http://localhost:11435/v1",
         "FIGUREITOUT_LOCAL_MODEL": "tireless-router",
     }.items():
@@ -594,6 +600,27 @@ def install_full_access(
     for hooks in _reapply_figureitout_session_hooks(root, log):
         changes.append({"type": "hooks_reapply", "path": str(hooks)})
 
+    # 6b) Fleet sync (Cursor + Devin + OpenClaw) + KiloCode default
+    try:
+        from figureitout.sync import sync_agents
+
+        synced = sync_agents(workspace=root)
+        changes.append({"type": "sync", "path": "cursor+devin+openclaw"})
+        if not synced.get("in_sync"):
+            notes.append(f"fleet sync drift: {synced.get('status')}")
+    except Exception as exc:
+        errors.append(f"sync: {exc}")
+    try:
+        from figureitout.kilocode import configure_kilocode
+
+        kilo = configure_kilocode(workspace=root)
+        for p in kilo.get("written") or []:
+            changes.append({"type": "kilocode", "path": p})
+        if not kilo.get("key_present"):
+            notes.append("KILOCODE_API_KEY not in env — anonymous kilo-auto/free still configured")
+    except Exception as exc:
+        errors.append(f"kilocode: {exc}")
+
     # 7) Cursor Run Everything + Devin bypass LAST
     auto_result: dict[str, Any] = {}
     if patch_cursor:
@@ -616,9 +643,9 @@ def install_full_access(
     if llm_gate.get("router_started"):
         changes.append({"type": "router_start", "path": "tireless --serve-router"})
     if not llm_gate["router_ok"]:
-        errors.append(
+        notes.append(
             f"local_llm_down: {llm_gate.get('last_error') or 'router unreachable'} "
-            "(start with scripts/start-router.cmd)"
+            "(optional fallback after kilocode; start with scripts/start-router.cmd)"
         )
     elif llm_gate.get("missing_router_alias"):
         notes.append(
@@ -635,7 +662,7 @@ def install_full_access(
         status["models"] = llm_gate["models"]
 
     return {
-        "ok": not errors and bool(status.get("trusted")) and bool(status.get("router_ok")),
+        "ok": not errors and bool(status.get("trusted")),
         "trusted": True,
         "status": status,
         "changes": changes,
@@ -692,6 +719,21 @@ def status_full_access(workspace: Path | None = None) -> dict[str, Any]:
         llm_gate["router_ok"] = bool(local_llm["ok"])
         llm_gate["last_error"] = None if local_llm["ok"] else (local_llm.get("error") or llm_gate["last_error"])
 
+    fleet = {}
+    connections = {}
+    try:
+        from figureitout.sync import sync_status
+
+        fleet = sync_status(workspace=root)
+    except Exception as exc:
+        fleet = {"error": str(exc)}
+    try:
+        from figureitout.connections import connection_status
+
+        connections = connection_status(workspace=root)
+    except Exception as exc:
+        connections = {"error": str(exc)}
+
     return {
         "trusted": is_trusted(),
         "env_trusted": os.environ.get("FIGUREITOUT_TRUSTED", ""),
@@ -707,4 +749,7 @@ def status_full_access(workspace: Path | None = None) -> dict[str, Any]:
         "local_llm": local_llm,
         "models": llm_gate.get("models") or [],
         "auto_accept": auto,
+        "fleet": fleet,
+        "connections": connections,
+        "llm_provider": os.environ.get("LLM_PROVIDER", "kilocode"),
     }

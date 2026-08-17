@@ -99,7 +99,14 @@ def get_all_tools(run_id: str | None = None) -> list[Any]:
         """Reason carefully about a hard sub-problem."""
         return think(prompt)
 
-    tools = [web_search, shell, read_file, write_file, browse, vision, deep_think]
+    @tool
+    def computer_use(action: str, target: str = "") -> str:
+        """Desktop/GUI last resort. Use only when the job is a native app or logged-in browser."""
+        from figureitout.computer import computer_use as _cu
+
+        return str(_cu(action, target))
+
+    tools = [web_search, shell, read_file, write_file, browse, vision, deep_think, computer_use]
     if not is_trusted():
         # Sandbox: drop unrestricted browse/shell still available but policy-gated.
         pass
@@ -107,6 +114,8 @@ def get_all_tools(run_id: str | None = None) -> list[Any]:
 
 
 def _callable_tool_wrappers(run_id: str | None) -> list[Any]:
+    from figureitout.computer import computer_use as cu
+
     comp = _computer(run_id)
     return [
         _Fn("web_search", run_research),
@@ -116,6 +125,7 @@ def _callable_tool_wrappers(run_id: str | None) -> list[Any]:
         _Fn("browse", comp.browse),
         _Fn("vision", analyze_image),
         _Fn("deep_think", think),
+        _Fn("computer_use", lambda action, target="": str(cu(action, target))),
     ]
 
 

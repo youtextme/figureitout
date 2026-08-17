@@ -19,7 +19,8 @@ def main() -> int:
                 "additional_context": MANDATE,
                 "env": {
                     "FIGUREITOUT_TRUSTED": "1",
-                    "LLM_PROVIDER": "local",
+                    "LLM_PROVIDER": "kilocode",
+                    "FIGUREITOUT_KILOCODE_MODEL": "kilo-auto/free",
                 },
             }
         )
