@@ -16,7 +16,8 @@ def build_parser() -> argparse.ArgumentParser:
         description=f"{BRAND} — one install, every prompt, shared trail.",
     )
     p.add_argument("objective", nargs="?", help="Objective to run")
-    p.add_argument("--install", action="store_true", help="Detect hosts and install as the default")
+    p.add_argument("--bootstrap", nargs="?", const=".", metavar="PATH", help="Wire Run Forrest Run into any repo (default: cwd)")
+    p.add_argument("--user-rules", action="store_true", help="Print Cursor User Rules text for cross-repo coverage")
     p.add_argument("--watch", action="store_true", help="Re-scan for newly installed IDEs/CLIs")
     p.add_argument("--sync", action="store_true", help="Pull latest canonical from GitHub main and re-default all hosts")
     p.add_argument("--status", action="store_true", help="Show canonical home and hosts")
@@ -36,6 +37,30 @@ def _packaged() -> Path:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     packaged = _packaged()
+
+    if args.user_rules:
+        from runforrestrun.mandate import USER_RULES_TEXT
+
+        print(USER_RULES_TEXT)
+        return 0
+
+    if args.bootstrap is not None:
+        from runforrestrun.install import bootstrap_repo
+        from runforrestrun.voice import two_lines
+
+        target = Path(args.bootstrap).resolve()
+        result = bootstrap_repo(project_root=target, packaged=packaged)
+        voice = two_lines(
+            f"Run, Forrest, Run! — invoked. Bootstrapped `{result['root']}`.",
+            "Commit these files. Cloud and local agents on this repo will invoke every prompt.",
+        )
+        if args.json:
+            print(json.dumps({**result, "voice": voice}, indent=2, default=str))
+        else:
+            print(voice)
+            for path in result.get("installed") or []:
+                print(f"  • {path}")
+        return 0 if result.get("ok") else 1
 
     if args.install or args.watch or args.sync:
         from runforrestrun.install import install_into_hosts, watch_once
