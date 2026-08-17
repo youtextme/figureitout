@@ -192,17 +192,3 @@ def test_openclaw_config_enables_skill(tmp_path, monkeypatch):
     payload = json.loads(config_path.read_text(encoding="utf-8"))
     assert payload["skills"]["entries"]["run-forrest-run"]["enabled"] is True
     assert "run-forrest-run" in payload["agents"]["defaults"]["skills"]
-    home = tmp_path / "home"
-    openclaw = home / ".openclaw"
-    openclaw.mkdir(parents=True)
-    monkeypatch.setenv("HOME", str(home))
-    monkeypatch.setenv("RUN_FORREST_HOME", str(tmp_path / "rfr"))
-    project = tmp_path / "proj"
-    project.mkdir()
-    result = install_into_hosts(project_root=project, packaged=Path(__file__).resolve().parents[1])
-    assert result["ok"] is True
-    config_path = openclaw / "openclaw.json"
-    assert config_path.exists()
-    payload = json.loads(config_path.read_text(encoding="utf-8"))
-    assert payload["skills"]["entries"]["run-forrest-run"]["enabled"] is True
-    assert "run-forrest-run" in payload["agents"]["defaults"]["skills"]
