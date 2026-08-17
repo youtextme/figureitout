@@ -58,6 +58,9 @@ def test_public_bundle_exists():
         "LICENSE",
         "mentalModal.md",
         "figureItOutObjective.md",
+        "LETSCOOK_BUILD.md",
+        "RUN_FOREST.md",
+        "HOW_TO_BUILD.md",
     ):
         assert (PUBLIC / name).exists(), name
 

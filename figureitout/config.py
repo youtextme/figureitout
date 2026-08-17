@@ -13,6 +13,24 @@ TRUSTED_ENV = "FIGUREITOUT_TRUSTED"
 KILL_SWITCH_ENV = "FIGUREITOUT_LOCKDOWN"
 
 
+def runner_home() -> Path:
+    """~/.myrunner unless FIGUREITOUT_HOME is set (tests / alternate machines)."""
+    override = os.environ.get("FIGUREITOUT_HOME", "").strip()
+    if override:
+        return Path(override).expanduser().resolve()
+    return Path.home() / ".myrunner"
+
+
+def jobs_root() -> Path:
+    """On-disk job folders. Lockdown sandboxes under runner_home()/runs."""
+    override = os.environ.get("FIGUREITOUT_JOBS_DIR", "").strip()
+    if override:
+        return Path(override).expanduser().resolve()
+    if not is_trusted():
+        return runner_home() / "runs"
+    return Path.home() / ".letscook" / "cursor-jobs"
+
+
 def is_trusted() -> bool:
     """Full-access mode — default ON. Set FIGUREITOUT_LOCKDOWN=1 or FIGUREITOUT_TRUSTED=0 to sandbox."""
     if os.environ.get(KILL_SWITCH_ENV, "").strip().lower() in {"1", "true", "yes", "on"}:

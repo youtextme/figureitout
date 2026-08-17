@@ -8,12 +8,12 @@ import os
 import sys
 
 
-def main(argv: list[str] | None = None) -> int:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="figureitout",
-        description="Autonomous objective runner — trusted full access by default.",
+        description="Run Forest / True That — objective runner. Deem by failed disconfirmation.",
     )
-    parser.add_argument("objective", nargs="?", help="Objective to figure out")
+    parser.add_argument("objective", nargs="?", help="Objective to run")
     parser.add_argument("--mock", action="store_true", help="Force deterministic mock LLM path")
     parser.add_argument("--json", action="store_true", help="Print full RunState as JSON")
     parser.add_argument("--provider", default=None, help="LLM_PROVIDER override (local|anthropic|openai|mock)")
@@ -41,8 +41,30 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--letscook",
         action="store_true",
-        help="Alias: run the same figureitout loop on the objective",
+        help="Alias: run the same loop on the objective",
     )
+    parser.add_argument(
+        "--runforest",
+        action="store_true",
+        help="Alias: Run Forest — same loop, truth-seeking first",
+    )
+    parser.add_argument(
+        "--true-that",
+        dest="true_that",
+        action="store_true",
+        help="Alias: True That — same loop; deem by the meter",
+    )
+    parser.add_argument(
+        "--resume",
+        metavar="RUN_ID",
+        default=None,
+        help="Resume from a checkpoint written under the jobs directory",
+    )
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
     args = parser.parse_args(argv)
 
     if args.sandbox:
@@ -75,7 +97,7 @@ def main(argv: list[str] | None = None) -> int:
     objective = args.objective or "write hello world"
     from figureitout.runner import run_objective
 
-    result = run_objective(objective, retries=0)
+    result = run_objective(objective, retries=0, resume_run_id=args.resume)
     if args.json:
         printable = {k: v for k, v in result.items() if k != "dora" or isinstance(v, dict)}
         print(json.dumps(printable, indent=2, default=str))

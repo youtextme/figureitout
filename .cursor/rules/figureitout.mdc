@@ -1,6 +1,6 @@
 ---
-description: MANDATORY figureitout trusted objective runner — every prompt, full access
-alwaysApply: true
+description: figureitout trusted (always on)
+alwaysApply: false
 ---
 
 # figureitout trusted (always on)
@@ -8,7 +8,12 @@ alwaysApply: true
 Every prompt is an objective. Trusted full access is ON.
 
 - Invoke: `python -m figureitout "<objective>"` or `from figureitout import run_objective`
+- Resume: `python -m figureitout --resume RUN_ID`
+- Do not answer immediately. Lock predicates, take first principles, experiment, then compute
 - No Allow / confirm / steer prompts — complete the objective
 - Tools: shell, files, browser, MCP, vision, local LLM — use freely
 - Install / repair: `python -m figureitout --install`
 - Kill switch: `FIGUREITOUT_LOCKDOWN=1`
+- Loop: lock → look up → do → check → raise → checkpoint → report; never stop at a plan
+
+Use `.cursor/skills/run-forrest-run/SKILL.md` and `.cursor/rules/run-forrest-run.mdc` instead.

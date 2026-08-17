@@ -291,6 +291,13 @@ This skill is not a proprietary religion. It is a composition of public ideas fo
 | [cli/cli](https://github.com/cli/cli) | Publish and link hygiene |
 | [pydantic/pydantic-ai](https://github.com/pydantic/pydantic-ai) | Structured agents beside Instructor |
 | [ollama/ollama](https://github.com/ollama/ollama) | Local models when a cloud key must not be requested |
+| [stanfordnlp/dspy](https://github.com/stanfordnlp/dspy) | Compile reasoning instead of hand-written prompts |
+| [UKGovernmentBEIS/inspect_ai](https://github.com/UKGovernmentBEIS/inspect_ai) | Agent evals as science (dataset → solver → scorer) |
+| [openai/openai-agents-python](https://github.com/openai/openai-agents-python) | Model-agnostic agent SDK |
+| [modelcontextprotocol/python-sdk](https://github.com/modelcontextprotocol/python-sdk) | Tool protocol |
+| [browser-use/browser-use](https://github.com/browser-use/browser-use) | Last-mile browser when CLI/MCP cannot |
+| [OpenHands/OpenHands](https://github.com/OpenHands/OpenHands) | Software-engineering worker pattern |
+| [letta-ai/letta](https://github.com/letta-ai/letta) | Long-horizon state that is not chat |
 
 figureitout’s customization is the glue: always-on force-routing, epistemic locks, predicate truth, a data cascade that does not publish corporate URLs as the teaching backbone. Exit: every major theme maps to at least one public repo in the ledger — no “secret sauce only” claim.
 
@@ -299,6 +306,50 @@ figureitout’s customization is the glue: always-on force-routing, epistemic lo
 Reading this file as literature is insufficient. Internalize as operating law: route → lock → brief → proofs of concept → board → compute → sniff → communicate → work backwards from use → judge → recover → verify UX → publish privately → write lessons. One scientific instrument with many lenses, not a buffet of optional tips.
 
 Checklist the agent runs mentally on every `/letscook`: (1) Did the pre-answer filter fail? (2) Can the lock sentence be written? (3) Does the context brief name at least one source? (4) Is the ask’s noun intact? (5) Live or blocked? (6) Source link under charts? (7) Work-backwards brief present? (8) Are predicates true? (9) Clicked if UI? (10) Private gist only? Public scaffolding: skills format + LangGraph discipline. The worker checklist in [`SKILL.md`](SKILL.md) is the canonical exam. Exit: the agent can recite the cascade without opening the file — then still opens the file when stakes are high.
+
+---
+
+## Prompt lifecycle — study every prompt as a laboratory run
+
+A prompt is not a turn. It is a run with a beginning that can be named, a middle that writes evidence, and an end that another agent can resume. The lifecycle is the same whether the host is Cursor, Devin, Claude, or `python -m figureitout`. Model-agnostic means the laboratory does not care which weights sit behind the tools; it does require search and slow reasoning. It is not ready to answer immediately. It spends tokens on datasets, reviews, counterfactuals, and opinions that survived an attempt to prove them wrong. Speed is not a virtue. Usable, tested output is.
+
+Phases, in order, with the file that proves the phase happened:
+
+1. **Ingress** — force the run; create `~/.letscook/cursor-jobs/<run_id>/` (or the lockdown sandbox). Trivial two-sentence Q&A with zero lookup and zero artifacts is the only skip.
+2. **Lock** — `objective_lock.md`: one sentence “This run succeeds when …”, quality tier, binary forks. No worker before this file exists.
+3. **First principles** — `first_principles.md`: irreducible truths, assumptions to test, reuse inventory, frontier methods from public GitHub.
+4. **Inventory** — `context_brief.md`: question restated, on-domain candidates, out-of-scope systems. Notes are hypotheses.
+5. **Experiments** — `experiments.md`: hypothesis, method, **observation**. Learning is forbidden unless an experiment or a failed check or user feedback produced that observation. Text is not learning.
+6. **Board** — `board.md`: standing seats plus an operator, skeptic, verifier, communicator recruited for *this* noun. Provisional pass or handoff.
+7. **Flaws** — `flaws.md`: how models go wrong on this job (hallucination, plan-as-done, noun swap, sycophancy, reward hacking, context stuffing) and the mechanical filter that rules each out.
+8. **Use** — `use.md`: who acts, the next action, what to ignore. 100% of the shipped text must be ready to use. Filler is a fail.
+9. **Steer** — `steer.md`: the three to five questions that would change the plan, written *after* research. If the human does not steer, proceed with the best evidenced path. Do not freeze the run on a click.
+10. **Compute** — plan → work → sniff → judge (remediate at most twice) → raise once. Workers write files. Parent reports paths.
+11. **Checkpoint** — `checkpoint.json`: run id, lock sentence, phase, predicates, next action. Turn the runner off and on. A different agent must be able to continue without rereading the chat.
+12. **Report and learn** — `result.md` leads with use. One lesson is queued as **preview** from an experiment; the runner code is not rewritten mid-flight.
+
+What is measured as true at each phase is a **predicate** that starts false and can become true only when evidence is on disk. An unevaluated required predicate is false. That is how subjectivity is removed.
+
+---
+
+## Nine tenets — mapped onto owners, not merged into them
+
+These are the human's operating tenets. They do not become a thirty-sixth theme. Each already has an owner in the matrix above; this table is the routing slip so a later writer cannot invent a parallel religion.
+
+| Tenet | Primary owner | What “true” looks like |
+|-------|----------------|------------------------|
+| 1. Scientific objective functions | Predicate truth | `PredicateBoard.all_required_true()` is impossible unless every required check ran and passed |
+| 2. First-principles thinking | First-principles defaults | Irreducible / assumptions / reuse / frontier brief exists before compute |
+| 3. Self-evolving, self-learning, self-improving | Learn after the run | Proposals queued; promote only with a preview receipt; no mid-run mutation |
+| 4. Learn by experiments, proofs of concept, user feedback | Prove the method wrong | A lesson has an observation; “I read that…” is rejected as learning |
+| 5. Use what is already built; find the cutting edge | Public composition + source inventory | Frontier catalog is public GitHub; reuse inventory before a new stack |
+| 6. AI-researcher lens on how models go wrong | Multi-lens judge + no invented numbers | Named flaws with the filter that suppresses them |
+| 7. Work backwards from use; 100% readily useful | Work backwards from use | `use.md` names who, next action, and the noise to keep the reader away from |
+| 8. Questions after research so the human can steer | Source inventory + objective lock | `steer.md` written; no-steer ⇒ proceed with the best evidenced path |
+| 9. Recruit teams who apply their thinking | Expert board + standing governance | Domain seats for this noun; standing seats cannot waive epistemic law |
+| 10. Turn off/on with crisp state any agent can resume | Memory that is not chat | `checkpoint.json` is sufficient to continue |
+
+Tenet 5 appears twice in the human's list (cutting-edge resources, then the researcher lens). Both rows are kept. Overlap of mention is allowed; ownership of the fail stays with the theme in the first column's owner.
 
 ---
 
@@ -385,6 +436,13 @@ Zero uncovered rows. Overlap of mention is allowed; ownership of the failure mod
 | [cli/cli](https://github.com/cli/cli) (~45.8k) — GitHub CLI | Private-gist wrappers + ticket/PR link hygiene | Publish and verify without trusting comments alone |
 | [pydantic/pydantic-ai](https://github.com/pydantic/pydantic-ai) (~19.3k) — structured agents | Complements Instructor for typed judge boards | Advisory prose cannot be the acceptance mechanism |
 | [ollama/ollama](https://github.com/ollama/ollama) (~179k) — local models | Default local route when a router is running | Work continues when cloud keys must not be requested |
+| [stanfordnlp/dspy](https://github.com/stanfordnlp/dspy) (~37.3k) — program, don't prompt | First-principles briefs + typed predicates instead of a bigger system prompt | Prompt text cannot be the acceptance mechanism; compiled checks can |
+| [UKGovernmentBEIS/inspect_ai](https://github.com/UKGovernmentBEIS/inspect_ai) (~2.6k) — LLM/agent evals | Predicate board + multi-lens judge | A scorer that never ran is false; narrative "looks good" is not a score |
+| [openai/openai-agents-python](https://github.com/openai/openai-agents-python) (~28.7k) — model-agnostic SDK | Same laboratory regardless of local / Anthropic / OpenAI | Host affinity + never ask keys; the loop is not a vendor |
+| [modelcontextprotocol/python-sdk](https://github.com/modelcontextprotocol/python-sdk) (~24.0k) — tools | Data cascade: CLI/MCP before browser | Strongest reliable path first |
+| [browser-use/browser-use](https://github.com/browser-use/browser-use) (~109k) — browser agents | Last in the cascade; customer-path click proof | Browser is unreliable vs CLI/MCP; still mandatory for UI proof |
+| [OpenHands/OpenHands](https://github.com/OpenHands/OpenHands) (~84.2k) — coding agents | Thin parent + job folders | Workers hold context; parent reports paths |
+| [letta-ai/letta](https://github.com/letta-ai/letta) (~24.3k) — stateful agents | `checkpoint.json` any agent can resume | Turn off/on without losing the lock |
 
 ---
 

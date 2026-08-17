@@ -25,6 +25,8 @@ PROJECT_SKILL = REPO_ROOT / ".cursor" / "skills" / "figureitout" / "SKILL.md"
 PROJECT_RULE = REPO_ROOT / ".cursor" / "rules" / "figureitout.mdc"
 OBJECTIVE_RUNNER_SKILL_SRC = REPO_ROOT / ".cursor" / "skills" / "objective-runner" / "SKILL.md"
 LETSCOOK_SKILL_SRC = REPO_ROOT / ".cursor" / "skills" / "letscook" / "SKILL.md"
+RUNFOREST_SKILL_SRC = REPO_ROOT / ".cursor" / "skills" / "runforest" / "SKILL.md"
+TRUE_THAT_SKILL_SRC = REPO_ROOT / ".cursor" / "skills" / "true-that" / "SKILL.md"
 LETSCOOK_RULE_SRC = REPO_ROOT / ".cursor" / "rules" / "letscook-default-f26.mdc"
 
 
@@ -251,6 +253,134 @@ def install_letscook_skill(
     return {"ok": True, "installed": installed, "skill_name": "letscook", "runner": "f26"}
 
 
+def _runforest_user_skill_dir() -> Path:
+    return Path.home() / ".cursor" / "skills" / "runforest"
+
+
+def install_runforest_skill(
+    *,
+    project_root: Path | None = None,
+    log: LogFn | None = None,
+) -> dict[str, Any]:
+    """Install Run Forest skill + epistemological core next to it."""
+    root = (project_root or REPO_ROOT).resolve()
+    src = RUNFOREST_SKILL_SRC
+    if not src.exists():
+        return {"ok": False, "error": f"skill source missing: {src}"}
+    text = src.read_text(encoding="utf-8")
+    forest = PUBLIC_DIR / "RUN_FOREST.md"
+    if not forest.exists():
+        forest = REPO_ROOT / "RUN_FOREST.md"
+    forest_text = forest.read_text(encoding="utf-8") if forest.exists() else ""
+    destinations = [
+        _runforest_user_skill_dir(),
+        root / ".cursor" / "skills" / "runforest",
+    ]
+    installed: list[str] = []
+    for dest_dir in destinations:
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        skill_path = dest_dir / "SKILL.md"
+        skill_path.write_text(text, encoding="utf-8")
+        installed.append(str(skill_path))
+        if forest_text:
+            (dest_dir / "RUN_FOREST.md").write_text(forest_text, encoding="utf-8")
+            installed.append(str(dest_dir / "RUN_FOREST.md"))
+        _log(log, "runforest", "done", f"Skill: {skill_path}")
+    return {"ok": True, "installed": installed, "skill_name": "runforest"}
+
+
+def _true_that_user_skill_dir() -> Path:
+    return Path.home() / ".cursor" / "skills" / "true-that"
+
+
+def install_true_that_skill(
+    *,
+    project_root: Path | None = None,
+    log: LogFn | None = None,
+) -> dict[str, Any]:
+    """Install the deeming skill + the same epistemological core."""
+    root = (project_root or REPO_ROOT).resolve()
+    src = TRUE_THAT_SKILL_SRC
+    if not src.exists():
+        return {"ok": False, "error": f"skill source missing: {src}"}
+    text = src.read_text(encoding="utf-8")
+    forest = PUBLIC_DIR / "RUN_FOREST.md"
+    if not forest.exists():
+        forest = REPO_ROOT / "RUN_FOREST.md"
+    forest_text = forest.read_text(encoding="utf-8") if forest.exists() else ""
+    destinations = [
+        _true_that_user_skill_dir(),
+        root / ".cursor" / "skills" / "true-that",
+    ]
+    installed: list[str] = []
+    for dest_dir in destinations:
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        skill_path = dest_dir / "SKILL.md"
+        skill_path.write_text(text, encoding="utf-8")
+        installed.append(str(skill_path))
+        if forest_text:
+            (dest_dir / "RUN_FOREST.md").write_text(forest_text, encoding="utf-8")
+            installed.append(str(dest_dir / "RUN_FOREST.md"))
+        _log(log, "true-that", "done", f"Skill: {skill_path}")
+    return {"ok": True, "installed": installed, "skill_name": "true-that"}
+
+
+def _agent_skills_dirs(project_root: Path) -> list[Path]:
+    """Agent Skills spec + OpenClaw load paths. Default runner, not a slash-only toy."""
+    home = Path.home()
+    dirs = [
+        project_root / ".agents" / "skills" / "figureitout",
+        home / ".agents" / "skills" / "figureitout",
+    ]
+    openclaw = Path(os.environ.get("OPENCLAW_HOME") or (home / ".openclaw"))
+    if openclaw.exists() or os.environ.get("OPENCLAW_HOME"):
+        workspace = openclaw / "workspace"
+        dirs.extend(
+            [
+                workspace / "skills" / "figureitout",
+                openclaw / "skills" / "figureitout",
+            ]
+        )
+    return dirs
+
+
+def install_openclaw_and_agent_skills(
+    *,
+    project_root: Path | None = None,
+    log: LogFn | None = None,
+) -> dict[str, Any]:
+    """Install as default on OpenClaw and any Agent Skills host."""
+    root = (project_root or REPO_ROOT).resolve()
+    src = _skill_source()
+    if not src.exists():
+        return {"ok": False, "error": f"skill source missing: {src}"}
+    text = src.read_text(encoding="utf-8")
+    companions = {}
+    for name in ("RUN_FOREST.md", "HOW_TO_BUILD.md", "PROMPT.md"):
+        p = PUBLIC_DIR / name
+        if not p.exists():
+            p = REPO_ROOT / name
+        if p.exists():
+            companions[name] = p.read_text(encoding="utf-8")
+    installed: list[str] = []
+    for dest_dir in _agent_skills_dirs(root):
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        skill_path = dest_dir / "SKILL.md"
+        skill_path.write_text(text, encoding="utf-8")
+        installed.append(str(skill_path))
+        for name, body in companions.items():
+            (dest_dir / name).write_text(body, encoding="utf-8")
+            installed.append(str(dest_dir / name))
+        _log(log, "openclaw", "done", f"Skill: {skill_path}")
+    openclaw = Path(os.environ.get("OPENCLAW_HOME") or (Path.home() / ".openclaw"))
+    workspace_agents = openclaw / "workspace" / "AGENTS.md"
+    if openclaw.exists() or os.environ.get("OPENCLAW_HOME"):
+        workspace_agents.parent.mkdir(parents=True, exist_ok=True)
+        ensure_agents_figureitout_block(workspace_agents, log)
+        installed.append(str(workspace_agents))
+    return {"ok": True, "installed": installed, "skill_name": "figureitout-openclaw"}
+
+
 def _skill_source() -> Path:
     if PUBLIC_SKILL.exists():
         return PUBLIC_SKILL
@@ -281,6 +411,34 @@ def _write_skill(dest: Path, log: LogFn | None) -> None:
     if prompt_src.exists():
         (dest.parent / "PROMPT.md").write_text(
             prompt_src.read_text(encoding="utf-8"), encoding="utf-8"
+        )
+    modal_src = PUBLIC_DIR / "mentalModal.md"
+    if not modal_src.exists():
+        modal_src = REPO_ROOT / "mentalModal.md"
+    if modal_src.exists():
+        (dest.parent / "mentalModal.md").write_text(
+            modal_src.read_text(encoding="utf-8"), encoding="utf-8"
+        )
+    build_src = PUBLIC_DIR / "LETSCOOK_BUILD.md"
+    if not build_src.exists():
+        build_src = REPO_ROOT / "LETSCOOK_BUILD.md"
+    if build_src.exists():
+        (dest.parent / "LETSCOOK_BUILD.md").write_text(
+            build_src.read_text(encoding="utf-8"), encoding="utf-8"
+        )
+    forest_src = PUBLIC_DIR / "RUN_FOREST.md"
+    if not forest_src.exists():
+        forest_src = REPO_ROOT / "RUN_FOREST.md"
+    if forest_src.exists():
+        (dest.parent / "RUN_FOREST.md").write_text(
+            forest_src.read_text(encoding="utf-8"), encoding="utf-8"
+        )
+    how_src = PUBLIC_DIR / "HOW_TO_BUILD.md"
+    if not how_src.exists():
+        how_src = REPO_ROOT / "HOW_TO_BUILD.md"
+    if how_src.exists():
+        (dest.parent / "HOW_TO_BUILD.md").write_text(
+            how_src.read_text(encoding="utf-8"), encoding="utf-8"
         )
     _log(log, "figureitout", "done", f"Skill: {dest}")
 
@@ -528,6 +686,36 @@ def install_full_access(
             notes.append(f"letscook skill: {lc_skill.get('error')}")
     except OSError as exc:
         errors.append(f"letscook skill: {exc}")
+
+    try:
+        rf_skill = install_runforest_skill(project_root=root, log=log)
+        if rf_skill.get("ok"):
+            for p in rf_skill.get("installed") or []:
+                changes.append({"type": "skill", "path": p, "name": "runforest"})
+        else:
+            notes.append(f"runforest skill: {rf_skill.get('error')}")
+    except OSError as exc:
+        errors.append(f"runforest skill: {exc}")
+
+    try:
+        tt_skill = install_true_that_skill(project_root=root, log=log)
+        if tt_skill.get("ok"):
+            for p in tt_skill.get("installed") or []:
+                changes.append({"type": "skill", "path": p, "name": "true-that"})
+        else:
+            notes.append(f"true-that skill: {tt_skill.get('error')}")
+    except OSError as exc:
+        errors.append(f"true-that skill: {exc}")
+
+    try:
+        oc_skill = install_openclaw_and_agent_skills(project_root=root, log=log)
+        if oc_skill.get("ok"):
+            for p in oc_skill.get("installed") or []:
+                changes.append({"type": "skill", "path": p, "name": "openclaw-agents"})
+        else:
+            notes.append(f"openclaw/agent-skills: {oc_skill.get('error')}")
+    except OSError as exc:
+        errors.append(f"openclaw/agent-skills: {exc}")
 
     try:
         or_skill = install_objective_runner_skill(project_root=root, log=log)

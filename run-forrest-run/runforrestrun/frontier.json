@@ -1,0 +1,24 @@
+{
+  "updated_at": "2026-08-17",
+  "note": "Community loops we compose — not tenets. Refreshed on install and --sync.",
+  "catalog": [
+    {"url": "https://github.com/langchain-ai/langgraph", "role": "control loop", "capability": "thinking"},
+    {"url": "https://github.com/crewAIInc/crewAI", "role": "multi-agent crew", "capability": "thinking"},
+    {"url": "https://github.com/microsoft/autogen", "role": "group chat debate", "capability": "thinking"},
+    {"url": "https://github.com/stanfordnlp/dspy", "role": "compile checks not prompts", "capability": "thinking"},
+    {"url": "https://github.com/UKGovernmentBEIS/inspect_ai", "role": "eval as science", "capability": "thinking"},
+    {"url": "https://github.com/openai/openai-agents-python", "role": "model-agnostic SDK", "capability": "tool_use"},
+    {"url": "https://github.com/huggingface/smolagents", "role": "code-act workers", "capability": "tool_use"},
+    {"url": "https://github.com/modelcontextprotocol/python-sdk", "role": "MCP tools", "capability": "tool_use"},
+    {"url": "https://github.com/OpenHands/OpenHands", "role": "SE worker pattern", "capability": "tool_use"},
+    {"url": "https://github.com/567-labs/instructor", "role": "typed verdicts", "capability": "context"},
+    {"url": "https://github.com/pydantic/pydantic-ai", "role": "structured agents", "capability": "context"},
+    {"url": "https://github.com/mem0ai/mem0", "role": "memory not chat", "capability": "context"},
+    {"url": "https://github.com/letta-ai/letta", "role": "long-horizon state", "capability": "context"},
+    {"url": "https://github.com/assafelovic/gpt-researcher", "role": "research fan-out", "capability": "context"},
+    {"url": "https://github.com/anthropics/skills", "role": "portable skill format", "capability": "context"},
+    {"url": "https://github.com/BerriAI/litellm", "role": "one proxy many models", "capability": "thinking"},
+    {"url": "https://github.com/ollama/ollama", "role": "local models", "capability": "thinking"},
+    {"url": "https://github.com/promptfoo/promptfoo", "role": "routing regression", "capability": "thinking"}
+  ]
+}

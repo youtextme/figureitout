@@ -17,6 +17,9 @@ Companion files in this repo:
 - [`PROMPT.md`](PROMPT.md) — one-paste install
 - [`AGENTS.md`](AGENTS.md) — drop-in mandate
 - [`mentalModal.md`](mentalModal.md) — why each rule exists, with public GitHub sources
+- [`RUN_FOREST.md`](RUN_FOREST.md) — epistemological core: deeming truth, three closed tenets
+- [`HOW_TO_BUILD.md`](HOW_TO_BUILD.md) — How to build from scratch and install as the default runner (Cursor, Devin, Claude, OpenClaw, CLI)
+- [`LETSCOOK_BUILD.md`](LETSCOOK_BUILD.md) — pointer to RUN_FOREST.md and HOW_TO_BUILD.md
 - Public repo: [https://github.com/youtextme/figureitout](https://github.com/youtextme/figureitout)
 
 `/letscook` means run figureitout. There is no second product name.
@@ -110,7 +113,10 @@ figureitout/
   judge.py             # pass/fail + failure_reason against success_criteria
   bar_raiser.py        # one raise if the result is merely adequate
   fail_closed.py       # reject fallback prose, dummy hosts, HTTP 500-as-success
-  runner.py            # graph: planner → worker → evaluator → bar_raiser → synthesizer
+  runner.py            # graph: laboratory → planner → worker → evaluator → bar_raiser → synthesizer
+  objective_fn.py      # predicate board; unevaluated required checks are false
+  lifecycle.py         # lock, first principles, experiments, board, steer, use
+  checkpoint.py        # resume-any-agent state on disk
   memory.py            # persist lessons; pointers not essays
   tools.py             # shell, read, write, browse
   research_tool.py     # live lookup used by the worker
@@ -138,7 +144,15 @@ Job artifacts (workers write here, parent does not paste blobs):
 ```
 ~/.letscook/cursor-jobs/<run_id>/
   objective_lock.md
+  first_principles.md
   context_brief.md
+  experiments.md
+  board.md
+  flaws.md
+  use.md
+  steer.md
+  checkpoint.json
+  predicates.json
   result.md
   memory.json
 ```
@@ -171,13 +185,15 @@ Public GitHub patterns for this style of loop: [langchain-ai/langgraph](https://
 ## 6. The loop (implement exactly this graph)
 
 ```
-planner → worker → evaluator ─┬─ fail & retries left → worker
-                              ├─ more tasks            → worker
-                              ├─ all tasks passed      → bar_raiser
-                              └─ retries exhausted     → planner (replan)
+laboratory → planner → worker → evaluator ─┬─ fail & retries left → worker
+                                           ├─ more tasks            → worker
+                                           ├─ all tasks passed      → bar_raiser
+                                           └─ retries exhausted     → planner (replan)
 bar_raiser ─ fail → planner (replan remaining)
            ─ pass → synthesizer → END
 ```
+
+**laboratory** — Before any worker: freeze the lock, write first principles, inventory sources, run a cheap experiment, recruit the board, name model flaws, write the use brief and steer questions, checkpoint. Do not answer. Trivial two-sentence asks still get a lock and predicates.
 
 **planner** — Extract a one-sentence goal and boolean done criteria. Research first. Three to five tasks with falsifiable `success_criteria` and `depends_on`. Never treat “Completed task…” as success. If the LLM is down, emit a degraded plan that still has real tasks, and set `degraded=true`.
 
@@ -196,6 +212,7 @@ python -m figureitout "your objective"
 python -m figureitout --install
 python -m figureitout --status
 python -m figureitout --mock "write hello world"
+python -m figureitout --resume RUN_ID
 ```
 
 `--letscook` is an alias: run the same objective through figureitout. Do not add a second engine name.

@@ -8,11 +8,16 @@ from typing import Any, Literal, TypedDict
 
 from langgraph.graph import END, StateGraph
 
+from pathlib import Path
+
 from figureitout.bar_raiser import bar_raise
+from figureitout.checkpoint import load_checkpoint, save_checkpoint
 from figureitout.dora import DoraTracker
 from figureitout.fail_closed import any_output_is_error_fallback, is_error_fallback_output
 from figureitout.judge import judge_task
+from figureitout.lifecycle import evaluate_laboratory, queue_lesson, run_laboratory
 from figureitout.memory import save_task_result
+from figureitout.objective_fn import EvaluationContext, PredicateBoard
 from figureitout.planner import Plan, Task, plan_objective
 from figureitout.worker import execute_task
 
@@ -35,6 +40,11 @@ class RunState(TypedDict, total=False):
     run_id: str
     degraded: bool
     done_criteria: str
+    job_dir: str
+    predicates: list
+    quality_tier: str
+    resume: bool
+    laboratory: dict
 
 
 _TRACKER: DoraTracker | None = None
@@ -116,6 +126,37 @@ def _objective_done_criteria_met(objective: str, done_criteria: str, final_outpu
     if token_hits >= max(2, len(tokens) // 2):
         return True
     return False
+
+
+def laboratory_node(state: RunState) -> dict[str, Any]:
+    """Pre-compute laboratory: lock, first principles, experiments, board, steer."""
+    objective = state.get("objective", "")
+    run_id = state.get("run_id") or ""
+    if state.get("resume") and run_id:
+        saved = load_checkpoint(str(run_id))
+        if saved and saved.get("predicates"):
+            return {
+                "run_id": str(saved.get("run_id") or run_id),
+                "job_dir": str(saved.get("job_dir") or ""),
+                "done_criteria": saved.get("done_sentence") or state.get("done_criteria") or "",
+                "predicates": list(saved.get("predicates") or []),
+                "quality_tier": saved.get("quality_tier") or "standard",
+                "status": "laboratory",
+                "objective": saved.get("objective") or objective,
+                "resume": True,
+            }
+    lab = run_laboratory(objective, run_id=run_id or None)
+    return {
+        "run_id": lab.run_id,
+        "job_dir": str(lab.job_dir),
+        "done_criteria": lab.done_sentence,
+        "predicates": lab.board.to_jsonable(),
+        "quality_tier": lab.quality_tier,
+        "laboratory": lab.to_public_dict(),
+        "status": "laboratory",
+        "objective": objective or lab.objective,
+        "resume": False,
+    }
 
 
 def planner_node(state: RunState) -> dict[str, Any]:
@@ -293,6 +334,51 @@ def synthesiser_node(state: RunState) -> dict[str, Any]:
     if status == "done" and (degraded or error_fallback):
         status = "blocked" if error_fallback else "partial"
 
+    job_dir = state.get("job_dir") or ""
+    pred_rows = state.get("predicates") or []
+    if pred_rows and job_dir:
+        board = PredicateBoard.from_dicts(list(pred_rows))
+        ctx = EvaluationContext(final_output=str(final_output), job_dir=Path(job_dir))
+        status, board = evaluate_laboratory(status, board, ctx)
+        pred_rows = board.to_jsonable()
+        if status == "done" and not board.all_required_true():
+            status = "partial"
+            degraded = True
+        result_md = Path(job_dir) / "result.md"
+        use_path = Path(job_dir) / "use.md"
+        use_lead = ""
+        if use_path.exists():
+            use_lead = use_path.read_text(encoding="utf-8").strip() + "\n\n"
+        result_md.write_text(
+            f"{use_lead}# Result\n\nstatus: {status}\n\n{final_output}\n",
+            encoding="utf-8",
+        )
+        save_checkpoint(
+            str(state.get("run_id") or Path(job_dir).name),
+            {
+                "objective": objective,
+                "done_sentence": done_criteria,
+                "phase": "report",
+                "quality_tier": state.get("quality_tier") or "standard",
+                "predicates": pred_rows,
+                "next_action": "read result.md; resume from this checkpoint if incomplete",
+                "job_dir": job_dir,
+                "status": status,
+                "final_output": str(final_output)[:4000],
+            },
+        )
+        if status in {"done", "partial"}:
+            source = "experiment" if status == "done" else "failed_check"
+            lesson = (
+                "predicates passed against job-folder evidence"
+                if status == "done"
+                else (state.get("failure_reason") or "required predicate stayed false")
+            )
+            try:
+                queue_lesson(objective, str(lesson), source=source)
+            except Exception:
+                pass
+
     metrics = _tracker().emit(
         "partial" if status in {"degraded", "blocked"} else status
     )
@@ -302,18 +388,22 @@ def synthesiser_node(state: RunState) -> dict[str, Any]:
         "dora": metrics,
         "degraded": degraded,
         "done_criteria": done_criteria,
+        "predicates": pred_rows,
+        "job_dir": job_dir,
     }
 
 
 def build_graph():
     builder = StateGraph(RunState)
+    builder.add_node("laboratory", laboratory_node)
     builder.add_node("planner", planner_node)
     builder.add_node("worker", worker_node)
     builder.add_node("evaluator", evaluator_node)
     builder.add_node("bar_raiser", bar_raiser_node)
     builder.add_node("synthesiser", synthesiser_node)
 
-    builder.set_entry_point("planner")
+    builder.set_entry_point("laboratory")
+    builder.add_edge("laboratory", "planner")
     builder.add_edge("planner", "worker")
     builder.add_edge("worker", "evaluator")
     builder.add_conditional_edges(
@@ -341,21 +431,39 @@ def build_graph():
 graph = build_graph()
 
 
-def run_objective(objective: str, retries: int = 0) -> dict[str, Any]:
+def run_objective(
+    objective: str,
+    retries: int = 0,
+    resume_run_id: str | None = None,
+) -> dict[str, Any]:
     """Public entry: run an objective through the figureitout graph."""
     global _TRACKER
     _TRACKER = DoraTracker()
-    result = graph.invoke(
-        {
-            "objective": objective,
-            "retries": retries,
-            "task_outputs": {},
-            "plan": [],
-            "status": "started",
-            "replan": False,
-            "run_id": str(uuid.uuid4()),
-            "degraded": False,
-            "done_criteria": "",
-        }
-    )
+    initial: dict[str, Any] = {
+        "objective": objective,
+        "retries": retries,
+        "task_outputs": {},
+        "plan": [],
+        "status": "started",
+        "replan": False,
+        "run_id": resume_run_id or str(uuid.uuid4()),
+        "degraded": False,
+        "done_criteria": "",
+        "job_dir": "",
+        "predicates": [],
+        "quality_tier": "",
+        "resume": False,
+    }
+    if resume_run_id:
+        saved = load_checkpoint(resume_run_id)
+        if saved:
+            initial["resume"] = True
+            initial["objective"] = saved.get("objective") or objective
+            initial["done_criteria"] = saved.get("done_sentence") or ""
+            initial["predicates"] = list(saved.get("predicates") or [])
+            initial["job_dir"] = str(saved.get("job_dir") or "")
+            initial["quality_tier"] = str(saved.get("quality_tier") or "")
+            if saved.get("plan"):
+                initial["plan"] = saved["plan"]
+    result = graph.invoke(initial)
     return dict(result)

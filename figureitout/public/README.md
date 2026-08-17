@@ -18,9 +18,21 @@ That is the whole idea. Everything else is install.
 
 ## Full mental model
 
-The installable skill stays short. The full operating law — every concern, why it exists, and the public GitHub projects it is composed from — is in [`mentalModal.md`](mentalModal.md). `/letscook` means run figureitout. There is no second product name.
+The installable skill stays short. The full operating law — every concern, why it exists, and the public GitHub projects it is composed from — is in [`mentalModal.md`](mentalModal.md). `/letscook` means run the objective.
 
-To rebuild the objective runner inside Cursor from a blank project, follow [`figureItOutObjective.md`](figureItOutObjective.md). This repository already contains the full Python package, tests, skill, and Cursor wiring.
+The epistemological core — what it takes to deem something true, three tenets that cannot be split, memory that is not chat — is in [`RUN_FOREST.md`](RUN_FOREST.md). Read that before any skill file if you are building a runner from scratch. **How to build** it from scratch and install it as the default objective runner (Cursor, Devin, Claude, OpenClaw, CLI, anything that reads `AGENTS.md`) is in [`HOW_TO_BUILD.md`](HOW_TO_BUILD.md). The Cursor-specific file tree (one implementation) is in [`figureItOutObjective.md`](figureItOutObjective.md).
+
+## How to build
+
+From scratch, then install as the **default** runner in the IDE and CLI
+you actually have: [`HOW_TO_BUILD.md`](HOW_TO_BUILD.md).
+
+The **platform** (one command, every IDE/CLI, shared trail, two-line
+voice): [`run-forrest-run/`](run-forrest-run/). Movie line: Run, Forrest, Run!
+
+That file names the community loops (control graph, multi-agent crew,
+typed judges, memory that is not chat) and the paths for Cursor, Devin,
+Claude, OpenClaw, `python -m figureitout`, and any `AGENTS.md` host.
 
 ## Install the package (clone)
 
@@ -77,9 +89,13 @@ chmod +x install.sh && ./install.sh
 ## How a run works
 
 ```
-lock the goal and the checks
+do not answer first
         ↓
-look up what is true (files, docs, tools)
+lock the goal and the predicates (unevaluated = false)
+        ↓
+first principles + live lookup + a real experiment
+        ↓
+board + steer questions (proceed if no steer)
         ↓
 do the work
         ↓
@@ -87,12 +103,15 @@ check evidence ──fail──► fix and check again
         ↓ pass
 raise the bar once if the result is sloppy
         ↓
+checkpoint so any agent can resume
+        ↓
 report what changed + the proof
 ```
 
 The agent does not wait for you to approve ordinary tool use. It stops only if a paid secret is missing from the environment, or if the next step would destroy production with no recovery.
 
 To sandbox a run: set `FIGUREITOUT_LOCKDOWN=1`.
+To continue a stopped run: `python -m figureitout --resume RUN_ID`.
 
 ## Who this is for
 
