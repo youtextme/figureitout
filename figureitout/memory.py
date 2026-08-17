@@ -1,14 +1,21 @@
-"""Layer 5 — long-term memory via mem0 (with local fallback)."""
+"""Memory that is not chat — four stores.
+
+Working: checkpoint (see checkpoint.py).
+Episodic: what happened in a run.
+Semantic: warranted atoms (see truth.py TruthStore).
+Procedural: the runner itself — never mutated mid-flight.
+"""
 
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
-from figureitout.config import MEMORY_USER_ID, RUNNER_HOME, use_mock
+from figureitout.config import MEMORY_USER_ID, runner_home, use_mock
 from figureitout.planner import Task
 
-_FALLBACK_PATH = RUNNER_HOME / "memory_fallback.jsonl"
 _memory: Any | None = None
 _memory_failed = False
 
@@ -30,15 +37,18 @@ def _get_memory() -> Any | None:
 
 
 def _fallback_add(content: str) -> None:
-    RUNNER_HOME.mkdir(parents=True, exist_ok=True)
-    with _FALLBACK_PATH.open("a", encoding="utf-8") as fh:
+    home = runner_home()
+    home.mkdir(parents=True, exist_ok=True)
+    path = home / "memory_fallback.jsonl"
+    with path.open("a", encoding="utf-8") as fh:
         fh.write(json.dumps({"content": content[:2000]}) + "\n")
 
 
 def _fallback_search(query: str, limit: int = 3) -> str:
-    if not _FALLBACK_PATH.exists():
+    path = runner_home() / "memory_fallback.jsonl"
+    if not path.exists():
         return ""
-    lines = _FALLBACK_PATH.read_text(encoding="utf-8").splitlines()[-200:]
+    lines = path.read_text(encoding="utf-8").splitlines()[-200:]
     hits: list[str] = []
     tokens = [tok for tok in query.lower().split() if len(tok) > 3]
     for line in reversed(lines):
@@ -91,3 +101,34 @@ def get_similar_past_tasks(task: Task) -> str:
         return "\n".join(parts)
     except Exception:
         return _fallback_search(task.description, limit=3)
+
+
+def episodic_path() -> Path:
+    return runner_home() / "episodic.jsonl"
+
+
+def append_episode(run_id: str, event: str, pointers: list[str] | None = None) -> Path:
+    """Episodic memory: what happened, with pointers. Not a generalization."""
+    path = episodic_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "ts": datetime.now(timezone.utc).isoformat(),
+        "run_id": run_id,
+        "event": event[:2000],
+        "pointers": list(pointers or []),
+        "store": "episodic",
+    }
+    with path.open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps(payload, ensure_ascii=True) + "\n")
+    return path
+
+
+def memory_layout() -> dict[str, str]:
+    """The four stores. Procedural is the installed runner — never a jsonl mid-run."""
+    home = runner_home()
+    return {
+        "working": "checkpoint.json in the job folder",
+        "episodic": str(home / "episodic.jsonl"),
+        "semantic": str(home / "semantic_truth.jsonl"),
+        "procedural": "runner source; preview-only proposals.jsonl",
+    }

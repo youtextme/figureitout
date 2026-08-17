@@ -103,6 +103,7 @@ def test_laboratory_writes_first_principles_experiments_board_use_steer(tmp_path
     lab = run_laboratory("write hello world")
     job = Path(lab.job_dir)
     for name in (
+        "truth.md",
         "objective_lock.md",
         "first_principles.md",
         "context_brief.md",
@@ -240,6 +241,7 @@ def test_skill_teaches_laboratory_without_ceremony():
         "checkpoint",
         "do not answer immediately",
         "steer",
+        "prove",
         "--resume",
         "papercut",
     ):

@@ -25,6 +25,7 @@ PROJECT_SKILL = REPO_ROOT / ".cursor" / "skills" / "figureitout" / "SKILL.md"
 PROJECT_RULE = REPO_ROOT / ".cursor" / "rules" / "figureitout.mdc"
 OBJECTIVE_RUNNER_SKILL_SRC = REPO_ROOT / ".cursor" / "skills" / "objective-runner" / "SKILL.md"
 LETSCOOK_SKILL_SRC = REPO_ROOT / ".cursor" / "skills" / "letscook" / "SKILL.md"
+RUNFOREST_SKILL_SRC = REPO_ROOT / ".cursor" / "skills" / "runforest" / "SKILL.md"
 LETSCOOK_RULE_SRC = REPO_ROOT / ".cursor" / "rules" / "letscook-default-f26.mdc"
 
 
@@ -251,6 +252,42 @@ def install_letscook_skill(
     return {"ok": True, "installed": installed, "skill_name": "letscook", "runner": "f26"}
 
 
+def _runforest_user_skill_dir() -> Path:
+    return Path.home() / ".cursor" / "skills" / "runforest"
+
+
+def install_runforest_skill(
+    *,
+    project_root: Path | None = None,
+    log: LogFn | None = None,
+) -> dict[str, Any]:
+    """Install Run Forest skill + epistemological core next to it."""
+    root = (project_root or REPO_ROOT).resolve()
+    src = RUNFOREST_SKILL_SRC
+    if not src.exists():
+        return {"ok": False, "error": f"skill source missing: {src}"}
+    text = src.read_text(encoding="utf-8")
+    forest = PUBLIC_DIR / "RUN_FOREST.md"
+    if not forest.exists():
+        forest = REPO_ROOT / "RUN_FOREST.md"
+    forest_text = forest.read_text(encoding="utf-8") if forest.exists() else ""
+    destinations = [
+        _runforest_user_skill_dir(),
+        root / ".cursor" / "skills" / "runforest",
+    ]
+    installed: list[str] = []
+    for dest_dir in destinations:
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        skill_path = dest_dir / "SKILL.md"
+        skill_path.write_text(text, encoding="utf-8")
+        installed.append(str(skill_path))
+        if forest_text:
+            (dest_dir / "RUN_FOREST.md").write_text(forest_text, encoding="utf-8")
+            installed.append(str(dest_dir / "RUN_FOREST.md"))
+        _log(log, "runforest", "done", f"Skill: {skill_path}")
+    return {"ok": True, "installed": installed, "skill_name": "runforest"}
+
+
 def _skill_source() -> Path:
     if PUBLIC_SKILL.exists():
         return PUBLIC_SKILL
@@ -295,6 +332,13 @@ def _write_skill(dest: Path, log: LogFn | None) -> None:
     if build_src.exists():
         (dest.parent / "LETSCOOK_BUILD.md").write_text(
             build_src.read_text(encoding="utf-8"), encoding="utf-8"
+        )
+    forest_src = PUBLIC_DIR / "RUN_FOREST.md"
+    if not forest_src.exists():
+        forest_src = REPO_ROOT / "RUN_FOREST.md"
+    if forest_src.exists():
+        (dest.parent / "RUN_FOREST.md").write_text(
+            forest_src.read_text(encoding="utf-8"), encoding="utf-8"
         )
     _log(log, "figureitout", "done", f"Skill: {dest}")
 
@@ -542,6 +586,16 @@ def install_full_access(
             notes.append(f"letscook skill: {lc_skill.get('error')}")
     except OSError as exc:
         errors.append(f"letscook skill: {exc}")
+
+    try:
+        rf_skill = install_runforest_skill(project_root=root, log=log)
+        if rf_skill.get("ok"):
+            for p in rf_skill.get("installed") or []:
+                changes.append({"type": "skill", "path": p, "name": "runforest"})
+        else:
+            notes.append(f"runforest skill: {rf_skill.get('error')}")
+    except OSError as exc:
+        errors.append(f"runforest skill: {exc}")
 
     try:
         or_skill = install_objective_runner_skill(project_root=root, log=log)

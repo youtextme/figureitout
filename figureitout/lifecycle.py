@@ -19,12 +19,14 @@ from typing import Any
 
 from figureitout.checkpoint import job_dir_for, save_checkpoint
 from figureitout.config import runner_home, workspace_root
+from figureitout.memory import append_episode
 from figureitout.objective_fn import (
     EvaluationContext,
     Predicate,
     PredicateBoard,
     PredicateKind,
 )
+from figureitout.truth import ClaimKind, TruthStore, cheap_confirm, split_atoms
 
 PHASES = (
     "ingress",
@@ -354,10 +356,10 @@ Quality tier: {tier}
 
 ## Irreducible
 
-- Done is a predicate over evidence, not a feeling.
-- The ask's noun is {noun!r}; a nearby noun is contamination.
-- Every number is live, omitted, or blocked.
-- The parent does not hold the artifact; the job folder does.
+- Correspondence: a claim is not true by being said.
+- Falsification: warrant is a failed attempt to kill the claim.
+- Atoms: do not rest on a bundle; the noun is {noun!r}.
+- Conservation: do not re-prove warranted atoms from prose.
 
 ## Assumptions to test
 
@@ -410,14 +412,16 @@ def _run_experiment(objective: str, job_dir: Path, tier: str) -> str:
     return f"""# Experiments
 
 Learning is objective. Prose is not evidence. A lesson is recorded only
-when an experiment produced an observation.
+when an experiment produced an observation. Designed disconfirmation
+comes before confirmation theater.
 
 ## Proof of concept 1 — reuse inventory
 
 - Hypothesis: {hypothesis}
 - Method: glob workspace `*.md` and package `*.py` (real filesystem, not recollection)
+- Disconfirmation: if those globs are empty, "reuse exists" dies
 - Observation: {observation}
-- Result: {"pass" if passed else "fail"}
+- Result: {"survived" if passed else "killed"}
 {skip}
 ## Counterfactuals queued
 
@@ -547,6 +551,47 @@ Boolean forks:
 """
 
 
+def _truth_md(objective: str, job: Path) -> str:
+    store = TruthStore()
+    atoms = split_atoms(objective)
+    lines = [
+        "# Atoms and warrants",
+        "",
+        "Context is built from warrants, not from related text.",
+        "Prove each fact-atom wrong before promoting it. Prefer cheap pings",
+        "on atoms that already survived.",
+        "",
+    ]
+    for claim in atoms:
+        prior = store.lookup(claim.atom)
+        if prior is not None and prior.is_warranted():
+            ping = cheap_confirm(prior, f"cheap ping at {job}", str(job))
+            lines.extend(
+                [
+                    f"## Conserved — {claim.atom}",
+                    "",
+                    f"- Kind: {claim.kind.value}",
+                    f"- Status: {ping.status.value}",
+                    "- Already warranted; no literature review. Cheap ping only.",
+                    "",
+                ]
+            )
+            continue
+        lines.extend(
+            [
+                f"## Unknown — {claim.atom}",
+                "",
+                f"- Kind: {claim.kind.value}",
+                "- Status: unverified",
+                f"- Disconfirmation: {claim.disconfirmation}",
+            ]
+        )
+        if claim.kind == ClaimKind.PREFERENCE:
+            lines.append("- Preference: record it. Do not A/B-test taste.")
+        lines.append("")
+    return "\n".join(lines)
+
+
 def _default_predicates(objective: str, job: Path, tier: str) -> list[Predicate]:
     preds = [
         Predicate(
@@ -620,6 +665,7 @@ def run_laboratory(objective: str, run_id: str | None = None) -> Laboratory:
 
     _write(job / "objective_lock.md", _lock_md(objective, done, tier))
     _write(job / "first_principles.md", _first_principles_md(objective, tier, frontier))
+    _write(job / "truth.md", _truth_md(objective, job))
     _write(job / "context_brief.md", _context_brief_md(objective, frontier))
     _write(job / "experiments.md", _run_experiment(objective, job, tier))
     _write(job / "board.md", _board_md(objective, tier))
@@ -671,6 +717,11 @@ def run_laboratory(objective: str, run_id: str | None = None) -> Laboratory:
             "job_dir": str(job),
             "status": "laboratory",
         },
+    )
+    append_episode(
+        rid,
+        f"laboratory locked {objective!r} at tier {tier}",
+        pointers=[str(job / "objective_lock.md"), str(job / "truth.md")],
     )
     return lab
 

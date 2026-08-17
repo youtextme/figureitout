@@ -33,6 +33,15 @@ Papercut examples: find a symbol, explain one file, one-shot web fact.
 Not papercut: build, rebuild, playbooks, PRs, analysis an executive will use.
 When in doubt, upgrade. Never downgrade to save tokens.
 
+## Truth
+
+Prove fact-claims wrong before believing them. A guess with formatting
+is not a pattern. If you cannot kill a claim with a cheap test, carry it.
+If an atom already survived with a pointer, ping it and move — do not
+re-research it from prose. Preferences (pink vs blue) are recorded.
+Fact-claims (purple converts) need observations. Build context from
+warrants, not related text. Blocked means change the probe, not give up.
+
 ## Loop
 
 1. **Lock** — one sentence + boolean **predicates** that cannot pass without evidence.
@@ -86,6 +95,7 @@ Copy this file to:
 - Any agent: paste [PROMPT.md](PROMPT.md) into a new chat
 
 Read [mentalModal.md](mentalModal.md) when stakes are high.
+Read [RUN_FOREST.md](RUN_FOREST.md) for what it takes to deem something true.
 
 Optional CLI:
 
