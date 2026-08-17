@@ -6,8 +6,31 @@ __pycache__/
 dist/
 build/
 canonical/
-# Local host install artifacts (created by ./install.sh in this repo)
-.cursor/
-.claude/
-.devin/
-.agents/
+
+# Host wiring we commit for cloud/team defaults (install refreshes the rest locally)
+!.cursor/
+.cursor/*
+!.cursor/skills/
+!.cursor/skills/**
+!.cursor/rules/
+!.cursor/rules/**
+!.cursor/hooks.json
+
+!.devin/
+.devin/*
+!.devin/skills/
+!.devin/skills/**
+!.devin/rules/
+!.devin/rules/**
+!.devin/global_rules.md
+!.devin/hooks.json
+
+!.agents/
+.agents/*
+!.agents/skills/
+!.agents/skills/**
+
+!.claude/
+.claude/*
+!.claude/skills/
+!.claude/skills/**
