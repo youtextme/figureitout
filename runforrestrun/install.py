@@ -132,6 +132,12 @@ trigger: always_on
 Non-negotiable for every session. Canonical: https://github.com/youtextme/run-forrest-run
 """
 
+CLOUD_ENV_JSON = """{
+  "name": "Run, Forrest, Run!",
+  "install": "pip install \\"git+https://github.com/youtextme/figureitout.git\\" -q 2>/dev/null || true; RUN_FORREST_SKIP_SYNC=1 python3 -m runforrestrun --bootstrap ."
+}
+"""
+
 
 def _write(path: Path, body: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -420,6 +426,52 @@ def _write_shim() -> str | None:
     )
     shim.chmod(0o755)
     return str(shim)
+
+
+def bootstrap_repo(
+    project_root: Path | None = None,
+    packaged: Path | None = None,
+    *,
+    write_cloud_env: bool = True,
+) -> dict:
+    """Wire Run, Forrest, Run! into any repo (mohPlay, etc.) so agents invoke every prompt."""
+    root = (project_root or Path.cwd()).resolve()
+    removed = purge_legacy_runners(project_root=root)
+    canonical = write_canonical(packaged, sync=False)
+    skill = (canonical / "SKILL.md").read_text(encoding="utf-8")
+    installed: list[str] = list(removed)
+
+    repo_files: list[tuple[Path, str]] = [
+        (root / ".cursor" / "skills" / "run-forrest-run" / "SKILL.md", skill),
+        (root / ".cursor" / "rules" / "run-forrest-run.mdc", RULE_MDC),
+        (root / ".agents" / "skills" / "run-forrest-run" / "SKILL.md", skill),
+        (root / "skills" / "run-forrest-run" / "SKILL.md", skill),
+        (root / ".devin" / "skills" / "run-forrest-run" / "SKILL.md", skill),
+        (root / ".devin" / "global_rules.md", DEVIN_GLOBAL),
+        (root / ".devin" / "rules" / "run-forrest-run.md", DEVIN_RULE),
+        (root / ".claude" / "skills" / "run-forrest-run" / "SKILL.md", skill),
+    ]
+    for path, body in repo_files:
+        _write(path, body)
+        installed.append(str(path))
+
+    _upsert_agents(root / "AGENTS.md")
+    installed.append(str(root / "AGENTS.md"))
+
+    try:
+        _merge_hooks(root / ".cursor" / "hooks.json")
+        installed.append(str(root / ".cursor" / "hooks.json"))
+        _merge_hooks(root / ".devin" / "hooks.json")
+        installed.append(str(root / ".devin" / "hooks.json"))
+    except OSError:
+        pass
+
+    env_path = root / ".cursor" / "environment.json"
+    if write_cloud_env and not env_path.exists():
+        _write(env_path, CLOUD_ENV_JSON)
+        installed.append(str(env_path))
+
+    return {"ok": True, "root": str(root), "installed": installed, "canonical": str(canonical)}
 
 
 def watch_once(project_root: Path | None = None, packaged: Path | None = None) -> dict:

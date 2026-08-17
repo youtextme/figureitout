@@ -160,7 +160,38 @@ def test_purge_removes_legacy_figureitout_skill(tmp_path, monkeypatch):
     assert any("figureitout" in path for path in removed)
 
 
+def test_bootstrap_repo_writes_agent_files(tmp_path, monkeypatch):
+    monkeypatch.setenv("RUN_FORREST_HOME", str(tmp_path / "rfr"))
+    project = tmp_path / "mohPlay"
+    project.mkdir()
+    from runforrestrun.install import bootstrap_repo
+
+    result = bootstrap_repo(project_root=project, packaged=Path(__file__).resolve().parents[1])
+    assert result["ok"] is True
+    skill = project / ".cursor" / "skills" / "run-forrest-run" / "SKILL.md"
+    assert skill.exists()
+    assert "alwaysApply: true" in skill.read_text(encoding="utf-8")
+    assert "Run, Forrest, Run!" in (project / "AGENTS.md").read_text(encoding="utf-8")
+    hooks = project / ".cursor" / "hooks.json"
+    assert hooks.exists()
+    assert "runforrestrun.hooks.session_start" in hooks.read_text(encoding="utf-8")
+
+
 def test_openclaw_config_enables_skill(tmp_path, monkeypatch):
+    home = tmp_path / "home"
+    openclaw = home / ".openclaw"
+    openclaw.mkdir(parents=True)
+    monkeypatch.setenv("HOME", str(home))
+    monkeypatch.setenv("RUN_FORREST_HOME", str(tmp_path / "rfr"))
+    project = tmp_path / "proj"
+    project.mkdir()
+    result = install_into_hosts(project_root=project, packaged=Path(__file__).resolve().parents[1])
+    assert result["ok"] is True
+    config_path = openclaw / "openclaw.json"
+    assert config_path.exists()
+    payload = json.loads(config_path.read_text(encoding="utf-8"))
+    assert payload["skills"]["entries"]["run-forrest-run"]["enabled"] is True
+    assert "run-forrest-run" in payload["agents"]["defaults"]["skills"]
     home = tmp_path / "home"
     openclaw = home / ".openclaw"
     openclaw.mkdir(parents=True)
