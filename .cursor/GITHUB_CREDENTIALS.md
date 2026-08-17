@@ -1,27 +1,37 @@
 # GitHub credentials for Cloud Agents on this machine
 
-Agents read credentials from **machine-local files** (never committed):
+**Canonical store:** `~/.config/agent/` (mirrored to Cursor, Devin, OpenClaw)
 
 | File | Purpose |
 |------|---------|
-| `~/.config/cursor/github.env` | `source` this for `GH_TOKEN` / `GITHUB_TOKEN` |
-| `~/.config/cursor/github_pat` | Raw PAT (chmod 600) |
-| `~/.config/gh/hosts.yml` | `gh` CLI auth as `youtextme` |
-| `~/.git-credentials` | `git push` / `git clone` over HTTPS |
+| `~/.config/agent/github.env` | `source` → `GH_TOKEN` / `GITHUB_TOKEN` |
+| `~/.config/agent/github_pat` | Girish Mahadevan classic PAT for **youtextme** (`chmod 600`) |
+| `~/.config/agent/load-github.sh` | Loader for any shell |
+
+Host mirrors: `~/.config/cursor/`, `~/.config/devin/`, `~/.config/openclaw/`
+
+## Agent instructions installed
+
+| Host | Where agents learn about the PAT |
+|------|----------------------------------|
+| **Cursor** | `.cursor/rules/github-credentials.mdc` (`alwaysApply: true`) |
+| **Devin** | `.devin/GITHUB_CREDENTIALS.md` |
+| **OpenClaw** | `AGENTS.md` block + `~/.openclaw/github.env` |
+
+Re-install anytime:
+
+```bash
+python3 -m runforrestrun --install-github
+```
 
 ## Usage
 
 ```bash
-source ~/.config/cursor/github.env
+source ~/.config/agent/load-github.sh
 gh auth status
-git push origin main
 ```
-
-Also mirrored under `/home/ubuntu/` and `/tmp/rfr-home/` when both homes exist.
-
-**Current auth:** classic PAT for `youtextme` with full repo access (stored locally only).
 
 ## Security
 
 - Never commit PAT files. Workspace `.gitignore` blocks `*.pat` patterns.
-- Rotate the token if it was pasted in chat or shared broadly.
+- This is a **personal access token** — rotate at https://github.com/settings/tokens if exposed.
