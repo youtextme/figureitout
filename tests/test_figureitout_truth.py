@@ -8,10 +8,13 @@ from figureitout.memory import append_episode, memory_layout
 from figureitout.truth import (
     Claim,
     ClaimKind,
+    ProofGrade,
     TruthStore,
     WarrantStatus,
+    already_proven,
     cheap_confirm,
     classify_kind,
+    grade_proof,
     promote_if_survived,
     split_atoms,
     text_is_not_warrant,
@@ -90,6 +93,50 @@ def test_pink_over_blue_is_preference_not_a_fact():
     kinds = {a.kind for a in atoms}
     assert ClaimKind.PREFERENCE in kinds
     assert ClaimKind.FACT in kinds
+
+
+def test_citation_is_not_already_proven():
+    cited = Claim(
+        atom="paper shows conversion lift for purple",
+        kind=ClaimKind.FACT,
+        status=WarrantStatus.UNVERIFIED,
+        pointers=["https://arxiv.org/abs/0000.0000"],
+        observation="I read that the abstract confirms it",
+        source="blog",
+    )
+    assert already_proven(cited) is False
+    assert (
+        grade_proof(
+            observation="I read that the abstract confirms it",
+            pointers=["https://arxiv.org/abs/0000.0000"],
+            source="blog",
+        )
+        == ProofGrade.CITATION
+    )
+
+
+def test_replication_and_cheap_ping_are_proof_grades():
+    assert (
+        grade_proof(
+            observation="pytest exit 0 on test_foo",
+            pointers=["tests/test_foo.py"],
+            source="failed_check",
+        )
+        == ProofGrade.REPLICATION
+    )
+    assert (
+        grade_proof(
+            observation="re-read tests/test_foo.py; still passing",
+            pointers=["tests/test_foo.py"],
+            source="experiment",
+            existing_warranted=True,
+        )
+        == ProofGrade.CHEAP_PING
+    )
+    assert (
+        grade_proof(observation="", pointers=[], source="")
+        == ProofGrade.NONE
+    )
 
 
 def test_memory_layout_has_four_stores(tmp_path, monkeypatch):

@@ -17,7 +17,7 @@ Companion files in this repo:
 - [`PROMPT.md`](PROMPT.md) — one-paste install
 - [`AGENTS.md`](AGENTS.md) — drop-in mandate
 - [`mentalModal.md`](mentalModal.md) — why each rule exists, with public GitHub sources
-- [`RUN_FOREST.md`](RUN_FOREST.md) — epistemological core: deeming truth, four closed tenets
+- [`RUN_FOREST.md`](RUN_FOREST.md) — epistemological core: deeming truth, three closed tenets
 - [`LETSCOOK_BUILD.md`](LETSCOOK_BUILD.md) — pointer to RUN_FOREST.md
 - Public repo: [https://github.com/youtextme/figureitout](https://github.com/youtextme/figureitout)
 

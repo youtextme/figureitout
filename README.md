@@ -20,7 +20,7 @@ That is the whole idea. Everything else is install.
 
 The installable skill stays short. The full operating law — every concern, why it exists, and the public GitHub projects it is composed from — is in [`mentalModal.md`](mentalModal.md). `/letscook` means run the objective.
 
-The epistemological core — what it takes to deem something true, four tenets that cannot be split, memory that is not chat — is in [`RUN_FOREST.md`](RUN_FOREST.md). Read that before any skill file if you are building a runner from scratch. The Cursor-specific file tree (one implementation) is in [`figureItOutObjective.md`](figureItOutObjective.md).
+The epistemological core — what it takes to deem something true, three tenets that cannot be split, memory that is not chat — is in [`RUN_FOREST.md`](RUN_FOREST.md). Read that before any skill file if you are building a runner from scratch. The Cursor-specific file tree (one implementation) is in [`figureItOutObjective.md`](figureItOutObjective.md).
 
 ## Install the package (clone)
 

@@ -24,15 +24,19 @@ def test_run_forest_never_says_figureitout():
     assert "/letscook" not in text.lower()
 
 
-def test_run_forest_closes_four_tenets():
+def test_run_forest_closes_three_tenets():
     text = DOC.read_text(encoding="utf-8")
-    assert "### 3.1 Correspondence" in text
-    assert "### 3.2 Falsification" in text
-    assert "### 3.3 Atoms" in text
-    assert "### 3.4 Conservation" in text
+    assert "### 3.1 Atoms" in text
+    assert "### 3.2 Probe" in text
+    assert "### 3.3 Conservation" in text
+    assert "### 3.1 Correspondence" not in text
+    assert "### 3.2 Falsification" not in text
     assert "cannot be added" in text.lower() or "cannot be added to" in text.lower()
     assert "cannot be subtracted" in text.lower() or "subtract" in text.lower()
     assert "What is not a tenet" in text
+    assert "True That" in text
+    assert "citation" in text.lower()
+    assert "cheap ping" in text.lower()
 
 
 def test_run_forest_teaches_deeming_and_prove_wrong():
@@ -58,7 +62,7 @@ def test_run_forest_teaches_deeming_and_prove_wrong():
 def test_run_forest_build_comes_last():
     text = DOC.read_text(encoding="utf-8")
     impl = text.find("how one might implement")
-    tenets = text.find("Four tenets")
+    tenets = text.find("Three tenets")
     assert tenets != -1 and impl != -1
     assert tenets < impl
 
@@ -72,6 +76,9 @@ def test_runforest_skill_is_thin_and_points_at_core():
     skill = (REPO / ".cursor" / "skills" / "runforest" / "SKILL.md").read_text(encoding="utf-8")
     assert "name: runforest" in skill
     assert "RUN_FOREST.md" in skill
-    assert "correspondence" in skill.lower()
+    assert "atoms" in skill.lower()
+    assert "probe" in skill.lower()
+    assert "conservation" in skill.lower()
+    assert "True That" in skill or "true that" in skill.lower()
     assert "alwaysApply" not in skill
     assert len(skill.splitlines()) < 40

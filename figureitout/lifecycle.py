@@ -26,7 +26,13 @@ from figureitout.objective_fn import (
     PredicateBoard,
     PredicateKind,
 )
-from figureitout.truth import ClaimKind, TruthStore, cheap_confirm, split_atoms
+from figureitout.truth import (
+    ClaimKind,
+    TruthStore,
+    already_proven,
+    cheap_confirm,
+    split_atoms,
+)
 
 PHASES = (
     "ingress",
@@ -356,10 +362,9 @@ Quality tier: {tier}
 
 ## Irreducible
 
-- Correspondence: a claim is not true by being said.
-- Falsification: warrant is a failed attempt to kill the claim.
 - Atoms: do not rest on a bundle; the noun is {noun!r}.
-- Conservation: do not re-prove warranted atoms from prose.
+- Probe: warrant is a failed killing by a designed disconfirmation that contacted the world.
+- Conservation: do not re-prove warranted atoms from prose. Citation is not already-proven.
 
 ## Assumptions to test
 
@@ -564,7 +569,7 @@ def _truth_md(objective: str, job: Path) -> str:
     ]
     for claim in atoms:
         prior = store.lookup(claim.atom)
-        if prior is not None and prior.is_warranted():
+        if prior is not None and already_proven(prior):
             ping = cheap_confirm(prior, f"cheap ping at {job}", str(job))
             lines.extend(
                 [

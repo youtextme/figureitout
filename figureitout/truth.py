@@ -35,6 +35,21 @@ class WarrantStatus(str, Enum):
     PREFERENCE = "preference"
 
 
+LEGAL_SOURCES = frozenset({"experiment", "failed_check", "user_feedback"})
+
+
+class ProofGrade(str, Enum):
+    """How close a putative proof is to a reading of the meter.
+
+    Citation is not a reading. Replication and cheap ping are.
+    """
+
+    NONE = "none"
+    CITATION = "citation"
+    CHEAP_PING = "cheap_ping"
+    REPLICATION = "replication"
+
+
 PREFERENCE_MARKERS = (
     "i want",
     "i need",
@@ -65,9 +80,34 @@ class Claim(BaseModel):
                 self.status == WarrantStatus.SURVIVED
                 and bool(self.pointers)
                 and bool(self.observation)
-                and self.source in {"experiment", "failed_check", "user_feedback"}
+                and self.source in LEGAL_SOURCES
             )
         return self.status == WarrantStatus.SURVIVED and bool(self.observation)
+
+
+def already_proven(claim: Claim) -> bool:
+    """Operational 'already proven': warranted atom, not a citation."""
+    return claim.is_warranted()
+
+
+def grade_proof(
+    *,
+    observation: str,
+    pointers: list[str],
+    source: str,
+    existing_warranted: bool = False,
+) -> ProofGrade:
+    """Citation names a document. Replication and ping read the meter."""
+    prose = text_is_not_warrant(observation)
+    has_ptr = bool(pointers)
+    legal = source in LEGAL_SOURCES
+    if existing_warranted and legal and has_ptr and not prose:
+        return ProofGrade.CHEAP_PING
+    if legal and has_ptr and not prose:
+        return ProofGrade.REPLICATION
+    if has_ptr and (not legal or prose):
+        return ProofGrade.CITATION
+    return ProofGrade.NONE
 
 
 def normalize_atom(text: str) -> str:
@@ -163,7 +203,7 @@ def promote_if_survived(
     store: TruthStore | None = None,
 ) -> Claim:
     """Refuse to mark SURVIVED when the proof is prose or the source is illegal."""
-    if source not in {"experiment", "failed_check", "user_feedback"}:
+    if source not in LEGAL_SOURCES:
         raise ValueError("warrant source must be experiment, failed_check, or user_feedback")
     if kind == ClaimKind.FACT and (text_is_not_warrant(observation) or not pointers):
         claim = Claim(
