@@ -177,6 +177,26 @@ def test_bootstrap_repo_writes_agent_files(tmp_path, monkeypatch):
     assert "runforrestrun.hooks.session_start" in hooks.read_text(encoding="utf-8")
 
 
+def test_install_global_prompt_law(tmp_path, monkeypatch):
+    home = tmp_path / "home"
+    home.mkdir()
+    monkeypatch.setenv("HOME", str(home))
+    monkeypatch.setenv("RUN_FORREST_HOME", str(tmp_path / "rfr"))
+    from runforrestrun.global_install import install_global_prompt_law
+
+    result = install_global_prompt_law(
+        packaged=Path(__file__).resolve().parents[1],
+        sync=False,
+    )
+    assert result["ok"] is True
+    plugin = home / ".cursor" / "plugins" / "local" / "run-forrest-run" / "rules" / "run-forrest-run.mdc"
+    assert plugin.exists()
+    assert "alwaysApply: true" in plugin.read_text(encoding="utf-8")
+    openclaw = home / ".openclaw" / "workspace" / "AGENTS.md"
+    assert openclaw.exists()
+    assert "Run, Forrest, Run!" in openclaw.read_text(encoding="utf-8")
+
+
 def test_openclaw_config_enables_skill(tmp_path, monkeypatch):
     home = tmp_path / "home"
     openclaw = home / ".openclaw"
