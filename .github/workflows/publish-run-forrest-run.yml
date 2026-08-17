@@ -1,0 +1,34 @@
+name: Publish run-forrest-run
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - run-forrest-run-standalone
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    if: github.repository == 'youtextme/figureitout'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: run-forrest-run-standalone
+          fetch-depth: 0
+
+      - name: Publish to youtextme/run-forrest-run
+        env:
+          PUBLISH_TOKEN: ${{ secrets.RUN_FORREST_PUBLISH_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${PUBLISH_TOKEN:-}" ]; then
+            echo "RUN_FORREST_PUBLISH_TOKEN secret not set — skipping publish."
+            echo "Add a fine-grained PAT with Contents: Read and write on youtextme/run-forrest-run"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git push "https://x-access-token:${PUBLISH_TOKEN}@github.com/youtextme/run-forrest-run.git" HEAD:main
