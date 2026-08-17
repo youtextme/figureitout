@@ -1,0 +1,38 @@
+{
+  "fleet": [
+    "cursor",
+    "devin",
+    "openclaw"
+  ],
+  "llm": {
+    "default": "kilocode",
+    "model": "kilo-auto/free",
+    "baseUrl": "https://api.kilo.ai/api/gateway",
+    "fallbacks": [
+      "local",
+      "openai",
+      "anthropic"
+    ],
+    "apiKeyEnv": [
+      "KILOCODE_API_KEY",
+      "KILO_API_KEY",
+      "KILOCODE_KEY"
+    ]
+  },
+  "computer_use": {
+    "when": "native apps or logged-in browser UI; never for files/git/tests",
+    "telegram": {
+      "app": "Telegram Desktop",
+      "channel": "Omimoh"
+    },
+    "gmail": {
+      "browser": "chrome",
+      "profile": "user"
+    },
+    "wallpaper": {
+      "target": "desktop background",
+      "subject": "BotFather",
+      "resolution": "3840x2160"
+    }
+  }
+}

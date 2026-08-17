@@ -43,7 +43,8 @@ def get_llm(temperature: float = 0.7) -> BaseChatModel:
     """Return a swappable chat model based on LLM_PROVIDER.
 
     Providers:
-      - local (default): OpenAI-compatible tireless-router / Ollama
+      - kilocode (default): Kilo Gateway free daily credits, then other models
+      - local: OpenAI-compatible tireless-router / Ollama
       - anthropic: ChatAnthropic
       - openai: ChatOpenAI
       - mock: deterministic stub
@@ -60,6 +61,17 @@ def get_llm(temperature: float = 0.7) -> BaseChatModel:
         from langchain_openai import ChatOpenAI
 
         return ChatOpenAI(model=openai_model(), temperature=temperature)
+    if provider == "kilocode":
+        from langchain_openai import ChatOpenAI
+
+        from figureitout.kilocode import KILOCODE_BASE_URL, kilocode_api_key, kilocode_model
+
+        return ChatOpenAI(
+            model=kilocode_model(),
+            temperature=temperature,
+            base_url=KILOCODE_BASE_URL,
+            api_key=kilocode_api_key() or "anonymous",
+        )
     # local / tireless / ollama — unlimited local inference by design
     from langchain_openai import ChatOpenAI
 

@@ -51,6 +51,7 @@ Clone or download this repo, then copy `SKILL.md`:
 |------|-------------------|
 | **Cursor** | `.cursor/skills/figureitout/SKILL.md` (this project) and/or `~/.cursor/skills/figureitout/SKILL.md` (all projects). Reload the window. |
 | **Devin** | `.devin/skills/figureitout/SKILL.md` |
+| **OpenClaw** | `.openclaw/skills/figureitout/SKILL.md` and/or `~/.openclaw/skills/figureitout/SKILL.md` |
 | **Claude** | `.claude/skills/figureitout/SKILL.md`, or paste `SKILL.md` into project instructions |
 | **Codex / any AGENTS.md agent** | copy [`AGENTS.md`](AGENTS.md) into the repo root (merge if one exists) |
 | **CLI** | paste [`PROMPT.md`](PROMPT.md) as the system or first user message |
@@ -105,7 +106,7 @@ To sandbox a run: set `FIGUREITOUT_LOCKDOWN=1`.
 - No theme codes, phase numbers, or internal nicknames
 - No list of libraries to install before the skill works
 - No API keys typed into chat (the agent reads the environment)
-- No browser clicking unless the job *is* the UI
+- No browser or desktop clicking unless the job *is* the UI
 
 ## Optional Python runner
 
@@ -116,7 +117,12 @@ python -m figureitout --install
 python -m figureitout "your objective"
 ```
 
-`--install` copies this skill into Cursor/Devin skill folders. The markdown skill is enough on its own.
+`--install` copies this skill into Cursor, Devin, and OpenClaw skill folders and keeps them in sync. The markdown skill is enough on its own.
+
+```bash
+python -m figureitout --sync
+python -m figureitout --examples --live
+```
 
 ## License
 

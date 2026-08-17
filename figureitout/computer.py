@@ -199,3 +199,267 @@ def _host_of(url: str) -> str:
     from urllib.parse import urlparse
 
     return urlparse(url).hostname or ""
+
+
+# --- Computer-use gate: GUI only when the job is the UI ---
+
+_FILES_HINTS = (
+    "kilocode",
+    "api key",
+    "configure cursor",
+    "configure devin",
+    "unit test",
+    "pytest",
+    "git commit",
+)
+_DESKTOP_HINTS = (
+    "telegram desktop",
+    "wallpaper",
+    "background wallpaper",
+    "desktop wallpaper",
+    "botfather",
+    "change the background",
+)
+_BROWSER_HINTS = (
+    "gmail",
+    "in chrome",
+    "google chrome",
+    "coupang",
+)
+
+
+def decide_surface(objective: str) -> str:
+    """files | browser | desktop. Computer use only for browser/desktop."""
+    text = (objective or "").lower()
+    if any(h in text for h in _FILES_HINTS):
+        return "files"
+    if any(h in text for h in _DESKTOP_HINTS):
+        return "desktop"
+    if "telegram" in text and "api" not in text:
+        return "desktop"
+    if any(h in text for h in _BROWSER_HINTS):
+        return "browser"
+    return "files"
+
+
+def computer_use_needed(objective: str) -> bool:
+    return decide_surface(objective) in {"desktop", "browser"}
+
+
+def desktop_status() -> dict[str, Any]:
+    """Live probe of display, Chrome, Telegram, wallpaper tools. No invented state."""
+    import shutil
+
+    display = os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY")
+    chrome = (
+        shutil.which("google-chrome")
+        or shutil.which("google-chrome-stable")
+        or shutil.which("chromium")
+        or shutil.which("chromium-browser")
+    )
+    telegram = shutil.which("telegram-desktop") or shutil.which("telegram")
+    wallpaper_tool = (
+        shutil.which("xfconf-query")
+        or shutil.which("gsettings")
+        or shutil.which("feh")
+        or shutil.which("nitrogen")
+    )
+    return {
+        "display": display or "",
+        "available": bool(display),
+        "chrome": chrome,
+        "telegram": telegram,
+        "wallpaper_tool": wallpaper_tool,
+    }
+
+
+def set_wallpaper(image_path: str | Path) -> dict[str, Any]:
+    """Point the desktop background at image_path. Returns evidence, or blocked."""
+    target = Path(image_path).expanduser().resolve()
+    if not target.exists():
+        return {"ok": False, "status": "blocked", "reason": f"image missing: {target}"}
+    desk = desktop_status()
+    errors: list[str] = []
+    tried: list[str] = []
+
+    xfconf = _which("xfconf-query")
+    if xfconf:
+        tried.append("xfconf-query")
+        # Enumerate backdrop properties and set last-image on each.
+        list_proc = subprocess.run(
+            [xfconf, "-c", "xfce4-desktop", "-l"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        props = [
+            line.strip()
+            for line in (list_proc.stdout or "").splitlines()
+            if line.strip().endswith("/last-image")
+        ]
+        if not props:
+            props = ["/backdrop/screen0/monitor0/workspace0/last-image"]
+        ok_any = False
+        for prop in props:
+            proc = subprocess.run(
+                [xfconf, "-c", "xfce4-desktop", "-p", prop, "-s", str(target)],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            if proc.returncode == 0:
+                ok_any = True
+            else:
+                errors.append(proc.stderr.strip() or proc.stdout.strip() or f"xfconf {prop} failed")
+        if ok_any:
+            return {"ok": True, "status": "done", "tool": "xfconf-query", "path": str(target), "props": props}
+
+    gsettings = _which("gsettings")
+    if gsettings:
+        tried.append("gsettings")
+        uri = target.as_uri()
+        proc = subprocess.run(
+            [gsettings, "set", "org.gnome.desktop.background", "picture-uri", uri],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        subprocess.run(
+            [gsettings, "set", "org.gnome.desktop.background", "picture-uri-dark", uri],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if proc.returncode == 0:
+            return {"ok": True, "status": "done", "tool": "gsettings", "path": str(target)}
+        errors.append(proc.stderr.strip() or "gsettings failed")
+
+    feh = _which("feh")
+    if feh and desk.get("available"):
+        tried.append("feh")
+        proc = subprocess.run([feh, "--bg-fill", str(target)], capture_output=True, text=True, check=False)
+        if proc.returncode == 0:
+            return {"ok": True, "status": "done", "tool": "feh", "path": str(target)}
+        errors.append(proc.stderr.strip() or "feh failed")
+
+    reason = "no wallpaper tool succeeded"
+    if not desk.get("available"):
+        reason = "no desktop display"
+    return {
+        "ok": False,
+        "status": "blocked",
+        "reason": reason,
+        "tried": tried,
+        "errors": errors,
+        "path": str(target),
+        "desktop": desk,
+    }
+
+
+def _which(name: str) -> str | None:
+    import shutil
+
+    return shutil.which(name)
+
+
+def render_botfather_wallpaper(dest: Path, size: tuple[int, int] = (3840, 2160)) -> Path:
+    """Paint a 16:9 BotFather-style wallpaper. Real pixels, not a description."""
+    dest = Path(dest)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        from PIL import Image, ImageDraw, ImageFilter, ImageFont
+    except ImportError as exc:
+        dest.write_bytes(_minimal_png())
+        raise RuntimeError("Pillow is required to render a wallpaper") from exc
+
+    w, h = size
+    img = Image.new("RGB", (w, h), (6, 12, 28))
+    draw = ImageDraw.Draw(img)
+    # Deep navy → telegram-blue glow
+    for y in range(h):
+        t = y / max(h - 1, 1)
+        r = int(6 + 20 * t)
+        g = int(12 + 80 * t)
+        b = int(28 + 140 * t)
+        draw.line([(0, y), (w, y)], fill=(r, g, b))
+    cx, cy = w // 2, int(h * 0.46)
+    halo = Image.new("RGB", (w, h), (6, 12, 28))
+    hd = ImageDraw.Draw(halo)
+    hd.ellipse((cx - w * 0.22, cy - h * 0.28, cx + w * 0.22, cy + h * 0.28), fill=(34, 158, 217))
+    img = Image.blend(img, halo.filter(ImageFilter.GaussianBlur(radius=max(w // 80, 8))), 0.45)
+    draw = ImageDraw.Draw(img)
+
+    head_r = int(min(w, h) * 0.16)
+    draw.ellipse((cx - head_r, cy - head_r, cx + head_r, cy + head_r), fill=(18, 28, 48), outline=(120, 210, 255), width=max(w // 400, 4))
+    # visor / eyes
+    eye_y = cy - head_r // 5
+    er = head_r // 6
+    for dx in (-head_r // 3, head_r // 3):
+        draw.ellipse((cx + dx - er, eye_y - er, cx + dx + er, eye_y + er), fill=(80, 230, 255))
+    # beard
+    draw.pieslice(
+        (cx - head_r * 0.85, cy, cx + head_r * 0.85, cy + int(head_r * 1.35)),
+        20,
+        160,
+        fill=(200, 210, 220),
+    )
+    # crown
+    crown_y = cy - int(head_r * 1.05)
+    draw.polygon(
+        [
+            (cx - head_r // 2, crown_y + head_r // 5),
+            (cx - head_r // 4, crown_y - head_r // 6),
+            (cx, crown_y + head_r // 8),
+            (cx + head_r // 4, crown_y - head_r // 6),
+            (cx + head_r // 2, crown_y + head_r // 5),
+        ],
+        fill=(255, 214, 90),
+    )
+    try:
+        font = ImageFont.truetype("DejaVuSans-Bold.ttf", size=max(w // 28, 24))
+        small = ImageFont.truetype("DejaVuSans.ttf", size=max(w // 48, 16))
+    except OSError:
+        font = ImageFont.load_default()
+        small = font
+    title = "BOTFATHER"
+    bbox = draw.textbbox((0, 0), title, font=font)
+    tw = bbox[2] - bbox[0]
+    draw.text(((w - tw) // 2, int(h * 0.82)), title, fill=(230, 245, 255), font=font)
+    sub = "4K  ·  3840×2160" if size == (3840, 2160) else f"{w}×{h}"
+    bbox = draw.textbbox((0, 0), sub, font=small)
+    sw = bbox[2] - bbox[0]
+    draw.text(((w - sw) // 2, int(h * 0.90)), sub, fill=(160, 200, 230), font=small)
+    img.save(dest, "PNG")
+    return dest
+
+
+def _minimal_png() -> bytes:
+    return bytes.fromhex(
+        "89504e470d0a1a0a0000000d4948445200000001000000010802000000907753"
+        "de0000000c4944415408d763f8ffff3f0005fe02fea57550a00000000049454e44ae426082"
+    )
+
+
+def computer_use(action: str, target: str = "") -> dict[str, Any]:
+    """Small desktop dispatcher. Prefer APIs; this is the GUI last resort."""
+    action = (action or "").strip().lower()
+    desk = desktop_status()
+    if action in {"status", "probe"}:
+        return {"ok": True, "desktop": desk}
+    if action in {"set_wallpaper", "wallpaper"}:
+        return set_wallpaper(target)
+    if action in {"open", "open_app"}:
+        if not desk.get("available"):
+            return {"ok": False, "status": "blocked", "reason": "no desktop display", "desktop": desk}
+        if not target:
+            return {"ok": False, "status": "blocked", "reason": "no app target"}
+        subprocess.Popen(  # noqa: S603
+            [target] if not target.startswith("/") and " " not in target else target,
+            shell=(" " in target),
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            env=os.environ.copy(),
+        )
+        return {"ok": True, "status": "launched", "target": target}
+    return {"ok": False, "status": "blocked", "reason": f"unknown computer-use action: {action}"}
+

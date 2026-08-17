@@ -43,6 +43,21 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Alias: run the same figureitout loop on the objective",
     )
+    parser.add_argument(
+        "--sync",
+        action="store_true",
+        help="Copy the figureitout skill to Cursor, Devin, and OpenClaw and report drift",
+    )
+    parser.add_argument(
+        "--examples",
+        action="store_true",
+        help="Run the fleet examples (telegram, gmail/coupang, kilocode, wallpaper) per agent",
+    )
+    parser.add_argument(
+        "--live",
+        action="store_true",
+        help="With --examples, attempt computer use and live KiloCode ping",
+    )
     args = parser.parse_args(argv)
 
     if args.sandbox:
@@ -60,6 +75,21 @@ def main(argv: list[str] | None = None) -> int:
         from figureitout.install import status_full_access
 
         print(json.dumps(status_full_access(), indent=2, default=str))
+        return 0
+
+    if args.sync:
+        from figureitout.sync import sync_agents
+
+        result = sync_agents()
+        print(json.dumps(result, indent=2, default=str))
+        return 0 if result.get("ok") else 1
+
+    if args.examples:
+        from figureitout.examples import run_all_examples
+
+        reports = run_all_examples(live=bool(args.live))
+        print(json.dumps(reports, indent=2, default=str))
+        # Examples may be blocked (missing GUI session) without failing the CLI.
         return 0
 
     if args.install:

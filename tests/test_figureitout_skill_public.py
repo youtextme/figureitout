@@ -98,7 +98,7 @@ def test_canonical_skill_copies_match():
 
 def test_readme_explains_install_for_every_surface():
     text = _read(PUBLIC / "README.md").lower()
-    for word in ("cursor", "devin", "claude", "cli", "install", "prompt"):
+    for word in ("cursor", "devin", "openclaw", "claude", "cli", "install", "prompt"):
         assert word in text, word
     assert "github.com/youtextme/figureitout" in text.lower() or "youtextme/figureitout" in text
 

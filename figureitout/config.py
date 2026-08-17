@@ -28,8 +28,8 @@ def use_mock() -> bool:
         return True
     if flag in {"0", "false", "no", "off"}:
         return False
-    provider = os.environ.get("LLM_PROVIDER", "local").strip().lower()
-    if provider in {"local", "tireless", "ollama"}:
+    provider = os.environ.get("LLM_PROVIDER", "kilocode").strip().lower()
+    if provider in {"local", "tireless", "ollama", "kilocode"}:
         return False
     if provider == "anthropic" and not os.environ.get("ANTHROPIC_API_KEY"):
         return True
@@ -39,7 +39,18 @@ def use_mock() -> bool:
 
 
 def llm_provider() -> str:
-    return os.environ.get("LLM_PROVIDER", "local").strip().lower()
+    return os.environ.get("LLM_PROVIDER", "kilocode").strip().lower()
+
+
+def kilocode_base_url() -> str:
+    return os.environ.get(
+        "FIGUREITOUT_KILOCODE_BASE_URL",
+        "https://api.kilo.ai/api/gateway",
+    )
+
+
+def kilocode_model() -> str:
+    return os.environ.get("FIGUREITOUT_KILOCODE_MODEL", "kilo-auto/free")
 
 
 def local_base_url() -> str:

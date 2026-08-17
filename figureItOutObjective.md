@@ -69,6 +69,7 @@ Create these paths. Copy from this GitHub repo when the network is available; ot
 .cursor/rules/figureitout.mdc            # alwaysApply: true
 AGENTS.md                                # merge the figureitout block; do not delete other sections
 .devin/skills/figureitout/SKILL.md       # if Devin is in use
+.openclaw/skills/figureitout/SKILL.md    # if OpenClaw is in use
 .claude/skills/figureitout/SKILL.md      # if Claude Code is in use
 ```
 
@@ -104,7 +105,7 @@ figureitout/
   __main__.py          # python -m figureitout
   config.py            # trusted default ON, lockdown, local LLM URL
   mandate.py           # AGENTS.md block + session text
-  llm.py               # provider: local | anthropic | openai | mock
+  llm.py               # provider: kilocode | local | anthropic | openai | mock
   planner.py           # structured plan + done criteria (pydantic)
   worker.py            # execute one task with tools
   judge.py             # pass/fail + failure_reason against success_criteria
@@ -112,11 +113,15 @@ figureitout/
   fail_closed.py       # reject fallback prose, dummy hosts, HTTP 500-as-success
   runner.py            # graph: planner → worker → evaluator → bar_raiser → synthesizer
   memory.py            # persist lessons; pointers not essays
-  tools.py             # shell, read, write, browse
+  tools.py             # shell, read, write, browse, computer_use
   research_tool.py     # live lookup used by the worker
   vision.py            # optional image understanding
   dora.py              # run counters written to ~/.myrunner/metrics.jsonl
-  computer.py          # optional browser last resort
+  computer.py          # browser + desktop last resort when the job is the UI
+  sync.py              # keep Cursor, Devin, OpenClaw skills identical
+  connections.py       # telegram, gmail, kilocode, wallpaper registry
+  kilocode.py          # free daily credits first, then other models
+  examples.py          # fleet playbooks (one per Cursor / Devin / OpenClaw)
   policy.py            # deny only true kill-switch / lockdown sandbox
   policies.yaml        # policy expressions
   install.py           # copy skill, hooks, AGENTS.md, env
@@ -194,6 +199,8 @@ CLI:
 ```bash
 python -m figureitout "your objective"
 python -m figureitout --install
+python -m figureitout --sync
+python -m figureitout --examples --live
 python -m figureitout --status
 python -m figureitout --mock "write hello world"
 ```
@@ -210,7 +217,10 @@ Default **trusted ON**. Kill switch **lockdown**.
 |-----|---------|---------|
 | `FIGUREITOUT_TRUSTED` | `1` | Full access |
 | `FIGUREITOUT_LOCKDOWN` | unset | If `1`, sandbox only |
-| `LLM_PROVIDER` | `local` | `local` / `anthropic` / `openai` / `mock` |
+| `LLM_PROVIDER` | `kilocode` | `kilocode` / `local` / `anthropic` / `openai` / `mock` |
+| `FIGUREITOUT_KILOCODE_BASE_URL` | Kilo Gateway | OpenAI-compatible free-credits endpoint |
+| `FIGUREITOUT_KILOCODE_MODEL` | `kilo-auto/free` | Default model; then fallbacks |
+| `FIGUREITOUT_FALLBACK_PROVIDERS` | `kilocode,local,openai,anthropic` | Order after free credits |
 | `FIGUREITOUT_LOCAL_BASE_URL` | `localhost:11435/v1` | OpenAI-compatible local router |
 | `FIGUREITOUT_LOCAL_MODEL` | `tireless-router` | Model name the router exposes |
 | `FIGUREITOUT_MOCK` | unset | Deterministic stubs for pytest |
@@ -226,7 +236,7 @@ Same-runtime pin: Cursor-started runs use tools that exist in this process. Do n
 
 `python -m figureitout --install` (and `install.ps1` / `install.sh` for skill-only) must:
 
-1. Copy `SKILL.md` to project + user Cursor skill dirs (and Devin/Claude if those folders exist).
+1. Copy `SKILL.md` to project + user Cursor skill dirs (and Devin/OpenClaw/Claude if those folders exist).
 2. Upsert the figureitout block into `AGENTS.md`.
 3. Copy `.cursor/rules/figureitout.mdc`.
 4. Merge `sessionStart` so the mandate is injected every session (text: every prompt is an objective; never stop at a plan).
@@ -239,7 +249,7 @@ Hooks respond with JSON the IDE understands. sessionStart additional context is 
 
 Memory across runs: pointers and one-line lessons, not chat dumps. Public pattern: [mem0ai/mem0](https://github.com/mem0ai/mem0).
 
-Browser is last: CLI and MCP first, then [microsoft/playwright](https://github.com/microsoft/playwright) only if the job is the UI or every prior path failed.
+Browser is last: CLI and MCP first, then [microsoft/playwright](https://github.com/microsoft/playwright) only if the job is the UI or every prior path failed. Native apps (Telegram Desktop, wallpaper) use desktop computer use. Keep Cursor, Devin, and OpenClaw in sync with `python -m figureitout --sync`. Default LLM is Kilo free daily credits ([Kilo-Org/kilocode](https://github.com/Kilo-Org/kilocode)), then other models. OpenClaw skill paths follow [openclaw/openclaw](https://github.com/openclaw/openclaw).
 
 ---
 
