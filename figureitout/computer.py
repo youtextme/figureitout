@@ -362,6 +362,20 @@ def _which(name: str) -> str | None:
     return shutil.which(name)
 
 
+def upscale_to_4k(src: str | Path, dest: str | Path) -> Path:
+    """Resize any image to 3840×2160 PNG. Requires Pillow."""
+    from PIL import Image
+
+    source = Path(src).expanduser().resolve()
+    target = Path(dest).expanduser().resolve()
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with Image.open(source) as im:
+        rgb = im.convert("RGB")
+        out = rgb.resize((3840, 2160), Image.Resampling.LANCZOS)
+        out.save(target, "PNG")
+    return target
+
+
 def render_botfather_wallpaper(dest: Path, size: tuple[int, int] = (3840, 2160)) -> Path:
     """Paint a 16:9 BotFather-style wallpaper. Real pixels, not a description."""
     dest = Path(dest)

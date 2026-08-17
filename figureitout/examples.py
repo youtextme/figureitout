@@ -14,6 +14,7 @@ from figureitout.computer import (
     desktop_status,
     render_botfather_wallpaper,
     set_wallpaper,
+    upscale_to_4k,
 )
 from figureitout.kilocode import configure_kilocode, kilocode_api_key
 from figureitout.sync import sync_agents
@@ -339,8 +340,12 @@ def _wallpaper_botfather(
     objective = "change the background wallpaper to a photo of botfather - 4K resolution really cool looking"
     size = (3840, 2160) if live else (64, 36)
     image = dest / ("botfather-4k.png" if live else "botfather-preview.png")
+    photo = os.environ.get("FIGUREITOUT_WALLPAPER_SRC", "").strip()
     try:
-        render_botfather_wallpaper(image, size=size)
+        if live and photo and Path(photo).exists() and size == (3840, 2160):
+            upscale_to_4k(photo, image)
+        else:
+            render_botfather_wallpaper(image, size=size)
     except Exception as exc:
         return {
             "status": "blocked",

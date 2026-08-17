@@ -46,6 +46,19 @@ def test_gmail_in_chrome_uses_browser_not_files():
     assert decide_surface("Open my Gmail in chrome") == "browser"
 
 
+def test_upscale_to_4k(tmp_path):
+    from PIL import Image
+
+    from figureitout.computer import upscale_to_4k
+
+    src = tmp_path / "tiny.png"
+    Image.new("RGB", (16, 9), (10, 20, 40)).save(src)
+    dest = tmp_path / "out.png"
+    path = upscale_to_4k(src, dest)
+    with Image.open(path) as im:
+        assert im.size == (3840, 2160)
+
+
 def test_desktop_status_is_a_live_probe():
     status = desktop_status()
     assert "display" in status
