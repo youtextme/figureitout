@@ -256,10 +256,12 @@ def _merge_hooks(hooks_json: Path) -> None:
 
 
 def _install_hooks(root: Path) -> list[str]:
+    home = Path.home()
     installed: list[str] = []
     for hooks_path in (
         root / ".cursor" / "hooks.json",
         root / ".devin" / "hooks.json",
+        home / ".cursor" / "hooks.json",
         _cursor_user_dir() / "hooks.json",
         _devin_user_dir() / "hooks.json",
     ):
@@ -271,8 +273,22 @@ def _install_hooks(root: Path) -> list[str]:
     return installed
 
 
+def _install_personal_agents() -> list[str]:
+    """Personal-scope mandate for Agent Skills / OpenClaw default state."""
+    home = Path.home()
+    installed: list[str] = []
+    for path in (home / ".agents" / "AGENTS.md", home / ".openclaw" / "AGENTS.md"):
+        try:
+            _upsert_agents(path)
+            installed.append(str(path))
+        except OSError:
+            continue
+    return installed
+
+
 def _configure_openclaw(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
+    home = Path.home()
     data: dict = {}
     if path.exists():
         try:
@@ -280,6 +296,14 @@ def _configure_openclaw(path: Path) -> None:
         except (json.JSONDecodeError, OSError):
             data = {}
     skills = data.setdefault("skills", {})
+    load = skills.setdefault("load", {})
+    extra = load.setdefault("extraDirs", [])
+    for entry in (
+        str(home / ".agents" / "skills"),
+        str(home / ".run-forrest-run" / "canonical"),
+    ):
+        if entry not in extra:
+            extra.append(entry)
     entries = skills.setdefault("entries", {})
     entry = entries.setdefault("run-forrest-run", {})
     entry["enabled"] = True
@@ -288,6 +312,12 @@ def _configure_openclaw(path: Path) -> None:
     default_skills = defaults.setdefault("skills", [])
     if "run-forrest-run" not in default_skills:
         default_skills.append("run-forrest-run")
+    # Ensure named agents inherit unless they define an explicit non-empty list.
+    for agent_cfg in (agents.get("entries") or {}).values():
+        if not isinstance(agent_cfg, dict):
+            continue
+        if "skills" not in agent_cfg:
+            agent_cfg["skills"] = list(default_skills)
     path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
 
@@ -338,6 +368,7 @@ def install_into_hosts(
             voices.append(new_host(host.title))
 
     installed.extend(_install_hooks(root))
+    installed.extend(_install_personal_agents())
 
     state = {
         "updated_at": datetime.now(timezone.utc).isoformat(),

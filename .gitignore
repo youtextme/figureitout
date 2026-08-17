@@ -15,6 +15,7 @@ canonical/
 !.cursor/rules/
 !.cursor/rules/**
 !.cursor/hooks.json
+!.cursor/environment.json
 
 !.devin/
 .devin/*

@@ -1,0 +1,4 @@
+{
+  "name": "Run, Forrest, Run!",
+  "install": "pip install -e . -q 2>/dev/null || pip install -e /workspace -q 2>/dev/null || true; RUN_FORREST_SKIP_SYNC=1 python3 -m runforrestrun --install; RUN_FORREST_SKIP_SYNC=1 python3 -m runforrestrun --watch"
+}
