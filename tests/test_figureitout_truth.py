@@ -144,6 +144,9 @@ def test_pink_over_blue_is_preference_not_a_fact():
     kinds = {a.kind for a in atoms}
     assert ClaimKind.PREFERENCE in kinds
     assert ClaimKind.FACT in kinds
+    dotted = split_atoms("alive.txt exists")
+    assert len(dotted) == 1
+    assert dotted[0].atom == "alive.txt exists"
 
 
 def test_citation_is_not_already_proven():

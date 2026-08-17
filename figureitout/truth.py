@@ -289,7 +289,7 @@ def cheap_confirm(
 def split_atoms(objective: str) -> list[Claim]:
     """First-principles split: one claim per sentence-ish clause; kind tagged."""
     text = (objective or "").strip()
-    parts = [p.strip() for p in re.split(r"[.;]+|\band then\b|\band\b", text) if p.strip()]
+    parts = [p.strip() for p in re.split(r"[.!?;]\s+|\band then\b|\s+and\s+", text) if p.strip()]
     if not parts:
         parts = [text]
     atoms: list[Claim] = []
