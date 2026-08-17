@@ -177,21 +177,27 @@ def test_bootstrap_repo_writes_agent_files(tmp_path, monkeypatch):
     assert "runforrestrun.hooks.session_start" in hooks.read_text(encoding="utf-8")
 
 
-def test_openclaw_config_enables_skill(tmp_path, monkeypatch):
+def test_install_global_prompt_law(tmp_path, monkeypatch):
     home = tmp_path / "home"
-    openclaw = home / ".openclaw"
-    openclaw.mkdir(parents=True)
+    home.mkdir()
     monkeypatch.setenv("HOME", str(home))
     monkeypatch.setenv("RUN_FORREST_HOME", str(tmp_path / "rfr"))
-    project = tmp_path / "proj"
-    project.mkdir()
-    result = install_into_hosts(project_root=project, packaged=Path(__file__).resolve().parents[1])
+    from runforrestrun.global_install import install_global_prompt_law
+
+    result = install_global_prompt_law(
+        packaged=Path(__file__).resolve().parents[1],
+        sync=False,
+    )
     assert result["ok"] is True
-    config_path = openclaw / "openclaw.json"
-    assert config_path.exists()
-    payload = json.loads(config_path.read_text(encoding="utf-8"))
-    assert payload["skills"]["entries"]["run-forrest-run"]["enabled"] is True
-    assert "run-forrest-run" in payload["agents"]["defaults"]["skills"]
+    plugin = home / ".cursor" / "plugins" / "local" / "run-forrest-run" / "rules" / "run-forrest-run.mdc"
+    assert plugin.exists()
+    assert "alwaysApply: true" in plugin.read_text(encoding="utf-8")
+    openclaw = home / ".openclaw" / "workspace" / "AGENTS.md"
+    assert openclaw.exists()
+    assert "Run, Forrest, Run!" in openclaw.read_text(encoding="utf-8")
+
+
+def test_openclaw_config_enables_skill(tmp_path, monkeypatch):
     home = tmp_path / "home"
     openclaw = home / ".openclaw"
     openclaw.mkdir(parents=True)

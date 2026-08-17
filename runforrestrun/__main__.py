@@ -16,8 +16,10 @@ def build_parser() -> argparse.ArgumentParser:
         description=f"{BRAND} — one install, every prompt, shared trail.",
     )
     p.add_argument("objective", nargs="?", help="Objective to run")
-    p.add_argument("--bootstrap", nargs="?", const=".", metavar="PATH", help="Wire Run Forrest Run into any repo (default: cwd)")
-    p.add_argument("--user-rules", action="store_true", help="Print Cursor User Rules text for cross-repo coverage")
+    p.add_argument("--install-global", action="store_true", help="Prompt-level law only — no repo files")
+    p.add_argument("--install", action="store_true", help="Global prompt law + host copies")
+    p.add_argument("--bootstrap", nargs="?", const=".", metavar="PATH", help="Optional: wire one repo")
+    p.add_argument("--user-rules", action="store_true", help="Print Cursor User Rules text")
     p.add_argument("--watch", action="store_true", help="Re-scan for newly installed IDEs/CLIs")
     p.add_argument("--sync", action="store_true", help="Pull latest canonical from GitHub main and re-default all hosts")
     p.add_argument("--status", action="store_true", help="Show canonical home and hosts")
@@ -44,6 +46,22 @@ def main(argv: list[str] | None = None) -> int:
         print(USER_RULES_TEXT)
         return 0
 
+    if args.install_global:
+        from runforrestrun.global_install import install_global_prompt_law
+        from runforrestrun.voice import two_lines
+
+        result = install_global_prompt_law(packaged=packaged, sync=True)
+        voice = two_lines(
+            "Run, Forrest, Run! — invoked. Prompt-level law installed. Zero repo dependency.",
+            f"Canonical: {result.get('canonical')}. Evolve everything: {result.get('evolve')}. Reload Cursor/OpenClaw/Devin.",
+        )
+        if args.json:
+            print(json.dumps({**result, "voice": voice}, indent=2, default=str))
+        else:
+            print(voice)
+            print(f"  plugin: {result.get('cursor_plugin')}")
+        return 0 if result.get("ok") else 1
+
     if args.bootstrap is not None:
         from runforrestrun.install import bootstrap_repo
         from runforrestrun.voice import two_lines
@@ -67,10 +85,14 @@ def main(argv: list[str] | None = None) -> int:
         from runforrestrun.voice import two_lines
 
         if args.sync:
+            from runforrestrun.global_install import install_global_prompt_law
+
+            global_result = install_global_prompt_law(packaged=packaged, sync=True)
             result = install_into_hosts(packaged=packaged)
+            result["global"] = global_result
             result["voice"] = two_lines(
-                "Synced canonical brain from GitHub main. Every host got the latest skill.",
-                f"Hosts: {', '.join(result.get('hosts') or [])}. Reload your IDE.",
+                "Synced canonical brain. Prompt law + every host refreshed from one source.",
+                f"Evolve again anytime: run-forrest-run --sync. Reload your IDE.",
             )
         elif args.watch:
             result = watch_once(packaged=packaged)
@@ -83,7 +105,11 @@ def main(argv: list[str] | None = None) -> int:
                     f"Default on: {hosts}. Reload the IDE. Any prompt is a trail. Type to steer.",
                 )
         else:
+            from runforrestrun.global_install import install_global_prompt_law
+
+            global_result = install_global_prompt_law(packaged=packaged, sync=True)
             result = install_into_hosts(packaged=packaged)
+            result["global"] = global_result
             hosts = ", ".join(result.get("hosts") or []) or "this machine"
             sync_info = (result.get("sync") or {}).get("pulled") or []
             sync_note = f" Synced: {len(sync_info)} files from main." if sync_info else ""
