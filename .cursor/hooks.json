@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "/usr/bin/python3 -m runforrestrun.hooks.session_start"
+      }
+    ]
+  }
+}

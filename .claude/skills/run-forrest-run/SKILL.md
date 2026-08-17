@@ -4,6 +4,7 @@ description: >-
   Run, Forrest, Run! Default objective runner. Use for every prompt, and
   when the user says run forrest run, run forest run, or true that.
 alwaysApply: true
+metadata: {"openclaw": {"always": true, "emoji": "🌲"}}
 ---
 
 # Run, Forrest, Run!
