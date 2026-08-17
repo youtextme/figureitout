@@ -10,6 +10,7 @@ import pytest
 from figureitout.checkpoint import load_checkpoint, save_checkpoint
 from figureitout.lifecycle import (
     PHASES,
+    classify_complexity,
     classify_quality_tier,
     evaluate_laboratory,
     run_laboratory,
@@ -84,6 +85,16 @@ def test_text_contains_predicate_needs_the_needle():
 def test_hello_world_is_trivial_and_standard_is_not():
     assert classify_quality_tier("write hello world") == "trivial"
     assert classify_quality_tier("build an executive research pack with live sources") == "standard"
+
+
+def test_complexity_router_keeps_papercuts_cheap():
+    assert classify_complexity("where is run_objective defined") == "papercut"
+    assert classify_complexity("what does FIGUREITOUT_LOCKDOWN do") == "papercut"
+    assert classify_complexity("find SKILL.md and quote the loop") == "papercut"
+    assert classify_complexity("search the web for GitHub stars of inspect_ai") == "papercut"
+    assert classify_complexity("add a failing test then make it pass") == "standard"
+    assert classify_complexity("rebuild figureitout from scratch as a skill") == "standard"
+    assert classify_complexity("exhaustive production dashboard for execs") == "exhaustive"
 
 
 def test_laboratory_writes_first_principles_experiments_board_use_steer(tmp_path, monkeypatch):
@@ -230,6 +241,7 @@ def test_skill_teaches_laboratory_without_ceremony():
         "do not answer immediately",
         "steer",
         "--resume",
+        "papercut",
     ):
         assert needle in lower, needle
     body = skill.split("---", 2)[-1]

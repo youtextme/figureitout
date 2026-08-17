@@ -215,21 +215,80 @@ class Laboratory:
         }
 
 
-def classify_quality_tier(objective: str) -> str:
+HEAVY_TOKENS = (
+    "build",
+    "implement",
+    "refactor",
+    "rewrite",
+    "migrate",
+    "ship",
+    "rebuild",
+    "architecture",
+    "dashboard",
+    "production",
+    "from scratch",
+    "test suite",
+    "pull request",
+    "multi-file",
+    "objective runner",
+    "playbook",
+)
+
+PAPERCUT_HINTS = (
+    "where is",
+    "where are",
+    "which file",
+    "find ",
+    "locate ",
+    "grep ",
+    "what does",
+    "what is",
+    "explain this",
+    "search the web",
+    "look up",
+    "how many stars",
+    "quote ",
+    "show me the",
+    "open ",
+)
+
+
+def classify_complexity(objective: str) -> str:
+    """Mechanical router: trivial | papercut | standard | exhaustive.
+
+    Do not ask a model whether the job is small. Self-classification is the bypass.
+    """
     text = (objective or "").strip()
     lower = text.lower()
     words = lower.split()
+    sentences = [s for s in re.split(r"[.!?]+", text) if s.strip()]
+
     if "hello world" in lower:
         return "trivial"
-    if any(tok in lower for tok in ("exhaustive", "executive", "board pack", "production")):
-        if any(tok in lower for tok in ("research", "dashboard", "ship", "analysis", "analyse", "analyze")):
-            return "exhaustive" if "exhaustive" in lower else "standard"
-        return "standard"
-    if len(words) <= 4 and not any(
-        tok in lower for tok in ("build", "research", "implement", "ship", "dashboard", "analyse", "analyze")
+    if "exhaustive" in lower:
+        return "exhaustive"
+    if any(tok in lower for tok in ("executive", "board pack")) and any(
+        tok in lower
+        for tok in ("research", "dashboard", "analysis", "analyse", "analyze", "ship", "pack")
     ):
+        return "standard"
+
+    heavy = any(tok in lower for tok in HEAVY_TOKENS)
+    if heavy:
+        return "standard"
+
+    short = len(words) <= 40 and len(sentences) <= 2
+    hint = any(h in lower for h in PAPERCUT_HINTS)
+    if hint and short:
+        return "papercut"
+    if len(words) <= 4:
         return "trivial"
     return "standard"
+
+
+def classify_quality_tier(objective: str) -> str:
+    """Back-compat alias used by the laboratory writer."""
+    return classify_complexity(objective)
 
 
 def frontier_for(objective: str) -> list[dict[str, str]]:
@@ -346,8 +405,8 @@ def _run_experiment(objective: str, job_dir: Path, tier: str) -> str:
     )
     passed = bool(md_files or py_files)
     skip = ""
-    if tier == "trivial":
-        skip = "\nskipped: quality_tier=trivial (cheap experiment still recorded)\n"
+    if tier in {"trivial", "papercut"}:
+        skip = f"\nskipped: quality_tier={tier} (cheap experiment still recorded)\n"
     return f"""# Experiments
 
 Learning is objective. Prose is not evidence. A lesson is recorded only
@@ -371,8 +430,11 @@ when an experiment produced an observation.
 def _board_md(objective: str, tier: str) -> str:
     standing = "\n".join(f"- {s}" for s in STANDING_SEATS)
     domain = "\n".join(f"- {s}: recruited for this noun" for s in DOMAIN_SEATS)
-    if tier == "trivial":
-        verdict = "provisional pass (trivial tier — standing seats still named)\nskipped: quality_tier=trivial"
+    if tier in {"trivial", "papercut"}:
+        verdict = (
+            f"provisional pass ({tier} tier — standing seats still named)\n"
+            f"skipped: quality_tier={tier}"
+        )
     else:
         verdict = (
             "provisional pass — operator, skeptic, verifier, and communicator "

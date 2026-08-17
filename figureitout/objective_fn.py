@@ -138,13 +138,17 @@ def _eval_one(pred: Predicate, ctx: EvaluationContext) -> tuple[bool, str]:
     if kind == PredicateKind.BOARD_PROVISIONAL_PASS:
         path = job / "board.md"
         text = path.read_text(encoding="utf-8").lower() if path.exists() else ""
-        ok = "provisional pass" in text or "skipped: quality_tier=trivial" in text
+        ok = "provisional pass" in text or "skipped: quality_tier=" in text
         return ok, f"board.md pass={ok}"
 
     if kind == PredicateKind.EXPERIMENT_OBSERVED:
         path = job / "experiments.md"
         text = path.read_text(encoding="utf-8").lower() if path.exists() else ""
-        ok = "observation:" in text or "observation —" in text or "skipped: quality_tier=trivial" in text
+        ok = (
+            "observation:" in text
+            or "observation —" in text
+            or "skipped: quality_tier=" in text
+        )
         return ok, f"experiments.md observed={ok}"
 
     if kind == PredicateKind.LOCK_PRESENT:

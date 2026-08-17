@@ -289,6 +289,13 @@ def _write_skill(dest: Path, log: LogFn | None) -> None:
         (dest.parent / "mentalModal.md").write_text(
             modal_src.read_text(encoding="utf-8"), encoding="utf-8"
         )
+    build_src = PUBLIC_DIR / "LETSCOOK_BUILD.md"
+    if not build_src.exists():
+        build_src = REPO_ROOT / "LETSCOOK_BUILD.md"
+    if build_src.exists():
+        (dest.parent / "LETSCOOK_BUILD.md").write_text(
+            build_src.read_text(encoding="utf-8"), encoding="utf-8"
+        )
     _log(log, "figureitout", "done", f"Skill: {dest}")
 
 

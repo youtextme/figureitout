@@ -20,7 +20,7 @@ That is the whole idea. Everything else is install.
 
 The installable skill stays short. The full operating law — every concern, why it exists, and the public GitHub projects it is composed from — is in [`mentalModal.md`](mentalModal.md). `/letscook` means run figureitout. There is no second product name.
 
-To rebuild the objective runner inside Cursor from a blank project, follow [`figureItOutObjective.md`](figureItOutObjective.md). This repository already contains the full Python package, tests, skill, and Cursor wiring.
+To rebuild the objective runner from a blank folder — any model, any flavor, with a complexity router so papercuts stay cheap — follow [`LETSCOOK_BUILD.md`](LETSCOOK_BUILD.md). The Cursor-specific file tree is in [`figureItOutObjective.md`](figureItOutObjective.md).
 
 ## Install the package (clone)
 

@@ -14,10 +14,24 @@ Every prompt is an **objective**: a job to finish, not a chat to continue.
 Done is not a feeling. Done is a check that came back true against real
 evidence — a file, a test, a command, a page. A plan is not done.
 
-**Do not answer immediately.** Non-trivial work is a laboratory: lock the
-goal, take first principles, gather sources, run experiments, form
-opinions from evidence, then move slowly. Token cost is acceptable.
-Unusable output is not.
+**Do not answer immediately** unless the job is a **papercut**.
+Non-trivial work is a laboratory: lock the goal, take first principles,
+gather sources, run experiments, form opinions from evidence, then move
+slowly. Token cost is acceptable. Unusable output is not.
+
+## Complexity
+
+Classify mechanically. Do not self-label "just research" to skip.
+
+- **Papercut** — ≤2 sentences, at most one file or one search, no new
+  architecture, no new tests. Then: one lock sentence, one lookup, answer,
+  stop. No board. No experiments.
+- **Standard / exhaustive** — anything else (build, ship, multi-file,
+  someone will act). Then the loop below is mandatory.
+
+Papercut examples: find a symbol, explain one file, one-shot web fact.
+Not papercut: build, rebuild, playbooks, PRs, analysis an executive will use.
+When in doubt, upgrade. Never downgrade to save tokens.
 
 ## Loop
 
