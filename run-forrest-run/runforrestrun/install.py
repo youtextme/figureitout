@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
@@ -12,7 +13,9 @@ from runforrestrun.hosts import (
     extra_instruction_files,
     skill_destinations,
 )
+from runforrestrun.frontier import refresh_frontier
 from runforrestrun.paths import canonical_dir, ensure_layout, hosts_state_path, home
+from runforrestrun.upstream import sync_from_upstream
 from runforrestrun.voice import new_host, two_lines
 
 
@@ -107,22 +110,53 @@ def _write(path: Path, body: str) -> None:
     path.write_text(body if body.endswith("\n") else body + "\n", encoding="utf-8")
 
 
-def write_canonical(packaged: Path | None = None) -> Path:
+def write_canonical(packaged: Path | None = None, *, sync: bool = False) -> Path:
+    """Write canonical brain. When sync=True, pull latest from GitHub main first."""
     ensure_layout()
     dest = canonical_dir()
-    _write(dest / "SKILL.md", SKILL_MD)
-    _write(dest / "AGENTS.block.md", AGENTS_BLOCK)
-    _write(dest / "rule.mdc", RULE_MDC)
-    _write(dest / "VERSION", "0.1.0\n")
-    if packaged:
-        for name in ("README.md", "HOW_TO_BUILD.md", "RUN_FORREST_RUN.md"):
+    skip_sync = os.environ.get("RUN_FORREST_SKIP_SYNC", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+    }
+
+    if sync and not skip_sync:
+        sync_from_upstream(dest, fallback_dir=packaged)
+    elif packaged:
+        for name in ("SKILL.md", "AGENTS.md", "RUN_FOREST_RUN.md", "HOW_TO_BUILD.md"):
             src = packaged / name
             if src.exists():
                 shutil.copy2(src, dest / name)
+        frontier_src = packaged / "runforrestrun" / "frontier.json"
+        if frontier_src.exists():
+            frontier_dest = dest / "runforrestrun" / "frontier.json"
+            frontier_dest.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(frontier_src, frontier_dest)
+
+    if not (dest / "SKILL.md").exists():
+        if packaged and (packaged / "SKILL.md").exists():
+            shutil.copy2(packaged / "SKILL.md", dest / "SKILL.md")
+        else:
+            _write(dest / "SKILL.md", SKILL_MD)
+
+    _write(dest / "AGENTS.block.md", AGENTS_BLOCK)
+    _write(dest / "rule.mdc", RULE_MDC)
+    _write(dest / "VERSION", "0.1.0\n")
+
+    if packaged:
+        for name in ("README.md", "HOW_TO_BUILD.md", "RUN_FOREST_RUN.md", "AGENTS.md"):
+            target = dest / name
+            if target.exists():
+                continue
+            src = packaged / name
+            if src.exists():
+                shutil.copy2(src, target)
         icon = packaged / "assets" / "icon.png"
         if icon.exists():
             (dest / "assets").mkdir(exist_ok=True)
             shutil.copy2(icon, dest / "assets" / "icon.png")
+
+    refresh_frontier(packaged_root=packaged)
     return dest
 
 
@@ -147,7 +181,7 @@ def install_into_hosts(
     packaged: Path | None = None,
 ) -> dict:
     root = (project_root or Path.cwd()).resolve()
-    canonical = write_canonical(packaged)
+    canonical = write_canonical(packaged, sync=True)
     skill = (canonical / "SKILL.md").read_text(encoding="utf-8")
     hosts = detect(root)
     installed: list[str] = []
@@ -184,6 +218,9 @@ def install_into_hosts(
     state = {
         "updated_at": datetime.now(timezone.utc).isoformat(),
         "canonical": str(canonical),
+        "sync": json.loads((canonical / "SYNC.json").read_text(encoding="utf-8"))
+        if (canonical / "SYNC.json").exists()
+        else {},
         "hosts": [{"id": h.id, "title": h.title, "kind": h.kind} for h in hosts],
         "installed": installed,
     }
@@ -198,6 +235,7 @@ def install_into_hosts(
         "canonical": str(canonical),
         "hosts": [h.id for h in hosts],
         "installed": installed,
+        "sync": state.get("sync"),
         "voices": voices,
         "home": str(home()),
     }

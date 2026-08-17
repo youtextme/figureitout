@@ -18,6 +18,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("objective", nargs="?", help="Objective to run")
     p.add_argument("--install", action="store_true", help="Detect hosts and install as the default")
     p.add_argument("--watch", action="store_true", help="Re-scan for newly installed IDEs/CLIs")
+    p.add_argument("--sync", action="store_true", help="Pull latest canonical from GitHub main and re-default all hosts")
     p.add_argument("--status", action="store_true", help="Show canonical home and hosts")
     p.add_argument("--steer", metavar="RUN_ID", help="Append a course-correction to a trail")
     p.add_argument("--message", default="", help="Steer text (with --steer)")
@@ -36,20 +37,35 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     packaged = _packaged()
 
-    if args.install or args.watch:
+    if args.install or args.watch or args.sync:
         from runforrestrun.install import install_into_hosts, watch_once
         from runforrestrun.voice import two_lines
 
-        result = (
-            watch_once(packaged=packaged)
-            if args.watch
-            else install_into_hosts(packaged=packaged)
-        )
-        hosts = ", ".join(result.get("hosts") or []) or "this machine"
-        voice = two_lines(
-            f"Run, Forrest, Run! — invoked. Canonical brain at {result.get('canonical')}.",
-            f"Default on: {hosts}. Reload the IDE. Any prompt is a trail. Type to steer.",
-        )
+        if args.sync:
+            result = install_into_hosts(packaged=packaged)
+            result["voice"] = two_lines(
+                "Synced canonical brain from GitHub main. Every host got the latest skill.",
+                f"Hosts: {', '.join(result.get('hosts') or [])}. Reload your IDE.",
+            )
+        elif args.watch:
+            result = watch_once(packaged=packaged)
+            if result.get("voice"):
+                voice = result["voice"]
+            else:
+                hosts = ", ".join(result.get("hosts") or []) or "this machine"
+                voice = two_lines(
+                    f"Run, Forrest, Run! — invoked. Canonical brain at {result.get('canonical')}.",
+                    f"Default on: {hosts}. Reload the IDE. Any prompt is a trail. Type to steer.",
+                )
+        else:
+            result = install_into_hosts(packaged=packaged)
+            hosts = ", ".join(result.get("hosts") or []) or "this machine"
+            sync_info = (result.get("sync") or {}).get("pulled") or []
+            sync_note = f" Synced: {len(sync_info)} files from main." if sync_info else ""
+            voice = two_lines(
+                f"Run, Forrest, Run! — invoked. Canonical brain at {result.get('canonical')}.{sync_note}",
+                f"Default on: {hosts}. Reload the IDE. Any prompt is a trail. Type to steer.",
+            )
         if result.get("voices"):
             voice = voice + "\n" + "\n".join(result["voices"])
         if args.json:

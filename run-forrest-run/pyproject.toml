@@ -18,7 +18,9 @@ dev = ["pytest>=8.0.0"]
 run-forrest-run = "runforrestrun.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/youtextme/figureitout/tree/main/run-forrest-run"
+Homepage = "https://github.com/youtextme/run-forrest-run"
+Repository = "https://github.com/youtextme/run-forrest-run"
+Documentation = "https://github.com/youtextme/run-forrest-run#readme"
 
 [tool.setuptools.packages.find]
 where = ["."]

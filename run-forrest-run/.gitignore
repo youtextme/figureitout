@@ -5,3 +5,9 @@ __pycache__/
 .venv/
 dist/
 build/
+canonical/
+# Local host install artifacts (created by ./install.sh in this repo)
+.cursor/
+.claude/
+.devin/
+.agents/
