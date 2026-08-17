@@ -27,6 +27,9 @@ The epistemological core — what it takes to deem something true, three tenets 
 From scratch, then install as the **default** runner in the IDE and CLI
 you actually have: [`HOW_TO_BUILD.md`](HOW_TO_BUILD.md).
 
+The **platform** (one command, every IDE/CLI, shared trail, two-line
+voice): [`run-forrest-run/`](run-forrest-run/). Movie line: Run, Forrest, Run!
+
 That file names the community loops (control graph, multi-agent crew,
 typed judges, memory that is not chat) and the paths for Cursor, Devin,
 Claude, OpenClaw, `python -m figureitout`, and any `AGENTS.md` host.

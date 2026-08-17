@@ -1,0 +1,13 @@
+---
+description: Run, Forrest, Run! default objective runner (always on)
+alwaysApply: true
+---
+
+# Run, Forrest, Run!
+
+Every prompt is an objective. First two lines:
+
+🌲 Run, Forrest, Run! — invoked.
+🌲 Type to course-correct anytime. Trail under ~/.run-forrest-run/runs/.
+
+Trusted ON. Kill switch: RUN_FORREST_LOCKDOWN=1.
