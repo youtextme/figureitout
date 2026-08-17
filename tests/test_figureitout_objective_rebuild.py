@@ -44,6 +44,7 @@ def test_rebuild_doc_links_skill_and_mental_model():
     text = DOC.read_text(encoding="utf-8")
     assert "SKILL.md" in text
     assert "mentalModal.md" in text
+    assert "HOW_TO_BUILD.md" in text
     assert "https://github.com/youtextme/figureitout" in text
     assert "https://github.com/anthropics/skills" in text
     assert "https://github.com/langchain-ai/langgraph" in text

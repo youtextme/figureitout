@@ -62,7 +62,7 @@ def test_run_forest_teaches_deeming_and_prove_wrong():
 
 def test_run_forest_build_comes_last():
     text = DOC.read_text(encoding="utf-8")
-    impl = text.find("how one might implement")
+    impl = text.find("## 10. How to build")
     tenets = text.find("Three tenets")
     assert tenets != -1 and impl != -1
     assert tenets < impl

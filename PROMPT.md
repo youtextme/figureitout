@@ -6,7 +6,7 @@ Loop: (1) one-sentence goal + the predicates that prove it — a check never run
 
 Do this now, with no extra ceremony:
 
-1. Write the file `.cursor/skills/figureitout/SKILL.md` with the figureitout skill (name: figureitout, alwaysApply: true, and the loop/autonomy/hard rules above). Also write `~/.cursor/skills/figureitout/SKILL.md`, and `.devin/skills/figureitout/SKILL.md` plus `.claude/skills/figureitout/SKILL.md` when those tools exist.
+1. Write the file `.cursor/skills/figureitout/SKILL.md` with the figureitout skill (name: figureitout, alwaysApply: true, and the loop/autonomy/hard rules above). Also write `~/.cursor/skills/figureitout/SKILL.md`, `.devin/skills/figureitout/SKILL.md`, `.claude/skills/figureitout/SKILL.md`, `.agents/skills/figureitout/SKILL.md`, and `~/.agents/skills/figureitout/SKILL.md`. If OpenClaw is installed, also write `~/.openclaw/workspace/skills/figureitout/SKILL.md` and merge the AGENTS.md block into `~/.openclaw/workspace/AGENTS.md`.
 2. Merge this block into `AGENTS.md` at the repo root (create the file if needed):
 
 ## figureitout

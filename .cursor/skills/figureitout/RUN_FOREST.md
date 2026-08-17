@@ -407,16 +407,22 @@ does.
 
 ---
 
-## 10. After the core: how one might implement this
+## 10. How to build
 
 Only now — after the three tenets — methods.
+
+The full from-scratch recipe, the community loops (LangGraph, CrewAI,
+AutoGen, and the rest that keep improving), and how to install this as
+the **default** objective runner in Cursor, Devin, Claude, OpenClaw, the
+CLI, and any `AGENTS.md` host, is [HOW_TO_BUILD.md](HOW_TO_BUILD.md).
 
 An implementation is **correct** if and only if:
 
 - unevaluated claims cannot be reported as true,
 - a designed disconfirmation exists for every promoted fact-atom,
 - citation is not treated as already-proven,
-- atoms already warranted are cheap-confirmed, not re-derived from text,
+- atoms already warranted are cheap-confirmed by re-contacting a stored
+  pointer, not a new job folder,
 - preferences are recorded, not experimented into existence,
 - working / episodic / semantic / procedural stores are distinct files
   (or equivalent),
@@ -424,10 +430,19 @@ An implementation is **correct** if and only if:
 - real jobs cannot skip the probe by self-classifying as small,
 - procedure does not mutate mid-run.
 
-How you get there is flavor: a skill a host inhabits, a CLI, a graph, a
-while-loop, a swarm. Pick tools that reach the world (search, papers,
-shells, tests). Pick a typed object for a claim. Pick a checkpoint format
-a stranger can load.
+The control loop that must exist (one public composition of it is
+[langchain-ai/langgraph](https://github.com/langchain-ai/langgraph);
+CrewAI and AutoGen are the debate substrate, not extra laws):
+
+```
+laboratory → planner → worker → evaluator
+                                  ├─ fail & retries left → worker
+                                  ├─ more tasks          → worker
+                                  ├─ all passed          → bar_raiser
+                                  └─ retries exhausted   → synthesizer
+bar_raiser ─ fail → planner
+           ─ pass → synthesizer → END
+```
 
 A blank-folder builder should:
 
@@ -438,8 +453,13 @@ A blank-folder builder should:
 4. Write a failing test: “citation is not already-proven; cheap ping is.”
 5. Implement claim objects and the four stores.
 6. Implement designed disconfirmation before any synthesizer.
-7. Only then wrap it in a prompt, a skill, or a package — whatever the
-   host is.
+7. Wire the graph above (compose a public loop; do not invent a private
+   religion).
+8. Only then wrap it in a skill that is **always on** in the host, plus
+   an `AGENTS.md` block for hosts with no `alwaysApply` flag (OpenClaw
+   workspace `AGENTS.md`, Codex, anything that reads that file).
+9. Prove default: a new session given a real job does the work without
+   waiting for a slash command.
 
 If you start at the skill file, you will encode methods as if they were
 tenets. That is how this document used to fail. Do not fail that way.

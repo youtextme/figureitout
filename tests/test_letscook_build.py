@@ -12,6 +12,7 @@ STUB = PUBLIC / "LETSCOOK_BUILD.md"
 def test_letscook_build_points_at_run_forest():
     text = STUB.read_text(encoding="utf-8")
     assert "RUN_FOREST.md" in text
+    assert "HOW_TO_BUILD.md" in text
     assert "truth" in text.lower()
 
 

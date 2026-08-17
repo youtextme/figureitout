@@ -171,6 +171,8 @@ def test_frontier_catalog_is_github_and_current():
     urls = {item["url"] for item in items}
     for url in (
         "https://github.com/langchain-ai/langgraph",
+        "https://github.com/crewAIInc/crewAI",
+        "https://github.com/microsoft/autogen",
         "https://github.com/stanfordnlp/dspy",
         "https://github.com/UKGovernmentBEIS/inspect_ai",
         "https://github.com/openai/openai-agents-python",

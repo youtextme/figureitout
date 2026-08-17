@@ -18,7 +18,8 @@ Companion files in this repo:
 - [`AGENTS.md`](AGENTS.md) — drop-in mandate
 - [`mentalModal.md`](mentalModal.md) — why each rule exists, with public GitHub sources
 - [`RUN_FOREST.md`](RUN_FOREST.md) — epistemological core: deeming truth, three closed tenets
-- [`LETSCOOK_BUILD.md`](LETSCOOK_BUILD.md) — pointer to RUN_FOREST.md
+- [`HOW_TO_BUILD.md`](HOW_TO_BUILD.md) — How to build from scratch and install as the default runner (Cursor, Devin, Claude, OpenClaw, CLI)
+- [`LETSCOOK_BUILD.md`](LETSCOOK_BUILD.md) — pointer to RUN_FOREST.md and HOW_TO_BUILD.md
 - Public repo: [https://github.com/youtextme/figureitout](https://github.com/youtextme/figureitout)
 
 `/letscook` means run figureitout. There is no second product name.

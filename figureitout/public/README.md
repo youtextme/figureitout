@@ -20,7 +20,16 @@ That is the whole idea. Everything else is install.
 
 The installable skill stays short. The full operating law — every concern, why it exists, and the public GitHub projects it is composed from — is in [`mentalModal.md`](mentalModal.md). `/letscook` means run the objective.
 
-The epistemological core — what it takes to deem something true, three tenets that cannot be split, memory that is not chat — is in [`RUN_FOREST.md`](RUN_FOREST.md). Read that before any skill file if you are building a runner from scratch. The Cursor-specific file tree (one implementation) is in [`figureItOutObjective.md`](figureItOutObjective.md).
+The epistemological core — what it takes to deem something true, three tenets that cannot be split, memory that is not chat — is in [`RUN_FOREST.md`](RUN_FOREST.md). Read that before any skill file if you are building a runner from scratch. **How to build** it from scratch and install it as the default objective runner (Cursor, Devin, Claude, OpenClaw, CLI, anything that reads `AGENTS.md`) is in [`HOW_TO_BUILD.md`](HOW_TO_BUILD.md). The Cursor-specific file tree (one implementation) is in [`figureItOutObjective.md`](figureItOutObjective.md).
+
+## How to build
+
+From scratch, then install as the **default** runner in the IDE and CLI
+you actually have: [`HOW_TO_BUILD.md`](HOW_TO_BUILD.md).
+
+That file names the community loops (control graph, multi-agent crew,
+typed judges, memory that is not chat) and the paths for Cursor, Devin,
+Claude, OpenClaw, `python -m figureitout`, and any `AGENTS.md` host.
 
 ## Install the package (clone)
 

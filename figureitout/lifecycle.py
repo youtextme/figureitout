@@ -137,6 +137,21 @@ FRONTIER_CATALOG: tuple[dict[str, str], ...] = (
         "role": "local models when cloud keys must not be requested",
         "capability": "thinking",
     },
+    {
+        "url": "https://github.com/crewAIInc/crewAI",
+        "role": "multi-agent crew / debate loop",
+        "capability": "thinking",
+    },
+    {
+        "url": "https://github.com/microsoft/autogen",
+        "role": "multi-agent group chat",
+        "capability": "thinking",
+    },
+    {
+        "url": "https://github.com/promptfoo/promptfoo",
+        "role": "prompt regression so the runner cannot be skipped",
+        "capability": "thinking",
+    },
 )
 
 

@@ -1,6 +1,9 @@
 # Moved
 
-The from-scratch contract is [RUN_FOREST.md](RUN_FOREST.md).
+Tenets: [RUN_FOREST.md](RUN_FOREST.md).
 
-It starts with what truth is, how truth is deemed, and three tenets that
-cannot be split or padded. It does not start with how to paste a skill.
+How to build (from scratch, community loops, default install in Cursor /
+Devin / Claude / OpenClaw / CLI): [HOW_TO_BUILD.md](HOW_TO_BUILD.md).
+
+RUN_FOREST starts with what truth is. HOW_TO_BUILD starts with how to
+construct the runner and make it the default objective runner.
