@@ -37,6 +37,16 @@ cd run-forrest-run
 chmod +x install.sh && ./install.sh
 ```
 
+**Standalone repo not live yet?** Use the mirror branch (same tree, ready to publish):
+
+```bash
+git clone -b run-forrest-run-standalone https://github.com/youtextme/figureitout.git run-forrest-run
+cd run-forrest-run
+chmod +x install.sh && ./install.sh
+```
+
+Then publish your own copy: `./publish.sh` (needs `gh auth login` with repo-create access).
+
 **No clone?** Paste [`PROMPT.md`](PROMPT.md) into any AI chat to bootstrap the skill by hand.
 
 **Python only:**
