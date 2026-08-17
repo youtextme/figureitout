@@ -19,6 +19,8 @@ git push origin main
 
 Also mirrored under `/home/ubuntu/` and `/tmp/rfr-home/` when both homes exist.
 
+**Current auth:** classic PAT for `youtextme` with full repo access (stored locally only).
+
 ## Security
 
 - Never commit PAT files. Workspace `.gitignore` blocks `*.pat` patterns.
